@@ -6,12 +6,13 @@ var pg_config   = config.pg_config,
 pg.connectionParameters = pg_config + '/' + schema_name;
 
 var points = require('../parkcoord.json');
-var error_response = "data already exists - bypassing db initialization step\n";
+var error_response = "Schema already exists - bypassing db initialization step\n";
 
 function createDBSchema(err, rows, result) {
   if(err && err.code == "ECONNREFUSED"){
     return console.error("DB connection unavailable, see README notes for setup assistance\n", err);
   }
+  flush_db();
   var table_name = 'odpad';
   var query = "CREATE TABLE "+table_name+" ( gid serial NOT NULL, name character varying(240), time_from TIMESTAMP NOT NULL, time_to TIMESTAMP NOT NULL, the_geom geometry, CONSTRAINT "+table_name+ "_pkey PRIMARY KEY (gid), CONSTRAINT "+table_name+"_enforce_dims_geom CHECK (st_ndims(the_geom) = 2), CONSTRAINT "+table_name+"_enforce_geotype_geom CHECK (geometrytype(the_geom) = 'POINT'::text OR the_geom IS NULL),CONSTRAINT "+table_name+"_enforce_srid_geom CHECK (st_srid(the_geom) = 4326) ) WITH ( OIDS=FALSE );";
   pg(query, addSpatialIndex);
@@ -120,6 +121,7 @@ function select_box(req, res, next){
     return rows;
   })
 };
+
 function select_all(req, res, next){
   console.log(pg);
   pg('SELECT gid,name,ST_X(the_geom) as lon,ST_Y(the_geom) as lat FROM odpad;', function(err, rows, result) {
