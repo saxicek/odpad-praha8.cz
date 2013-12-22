@@ -13,16 +13,23 @@ function createDBSchema(err, rows, result) {
   }
   // drop tables first
   // errors in this part are ignored - tables may and may not be present so DROP can fail
+  console.info('Dropping tables!');
   pg('DROP TABLE odpad;', function(err, rows, result){
-    if (!err) {
+    if (err) {
+      console.error(error_response, err);
+    } else {
       console.log('Table ODPAD dropped!');
     }
     return pg('DROP TABLE known_places;', function(err, rows, result){
-      if (!err) {
+      if (err) {
+        console.error(error_response, err);
+      } else {
         console.log('Table KNOWN_PLACES dropped!');
       }
       return pg('DROP TABLE odpad_import;', function(err, rows, result){
-        if (!err) {
+        if (err) {
+          console.error(error_response, err);
+        } else {
           console.log('Table ODPAD_IMPORT dropped!');
         }
         // follow up with create tables
