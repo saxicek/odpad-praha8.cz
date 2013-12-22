@@ -11,9 +11,32 @@ function createDBSchema(err, rows, result) {
   if(err && err.code == "ECONNREFUSED"){
     return console.error("DB connection unavailable, see README notes for setup assistance\n", err);
   }
+  // drop tables first
+  // errors in this part are ignored - tables may and may not be present so DROP can fail
+  pg('DROP TABLE odpad;', function(err, rows, result){
+    if (!err) {
+      console.log('Table ODPAD dropped!');
+    }
+    return pg('DROP TABLE known_places;', function(err, rows, result){
+      if (!err) {
+        console.log('Table KNOWN_PLACES dropped!');
+      }
+      return pg('DROP TABLE odpad_import;', function(err, rows, result){
+        if (!err) {
+          console.log('Table ODPAD_IMPORT dropped!');
+        }
+        // follow up with create tables
+        return createOdpadTable;
+      });
+    });
+  });
+}
+
+function createOdpadTable(err, rows, result) {
   var table_name = 'odpad';
-  var query = "CREATE TABLE "+table_name+" ( gid serial NOT NULL," +
-    "name character varying(240), " +
+  var query = "CREATE TABLE "+table_name+" ( " +
+    "gid serial NOT NULL," +
+    "place_name character varying(240), " +
     "time_from TIMESTAMP NOT NULL, " +
     "time_to TIMESTAMP NOT NULL, " +
     "the_geom geometry, " +
@@ -21,7 +44,7 @@ function createDBSchema(err, rows, result) {
     "CONSTRAINT "+table_name+"_enforce_dims_geom CHECK (st_ndims(the_geom) = 2), " +
     "CONSTRAINT "+table_name+"_enforce_geotype_geom CHECK (geometrytype(the_geom) = 'POINT'::text OR the_geom IS NULL), " +
     "CONSTRAINT "+table_name+"_enforce_srid_geom CHECK (st_srid(the_geom) = 4326), " +
-    "UNIQUE (name, time_from, time_to)" +
+    "UNIQUE (place_name, time_from, time_to)" +
     ") WITH ( OIDS=FALSE );";
   pg(query, addSpatialIndex);
 }
@@ -39,7 +62,15 @@ function addKnownPlaces(err, rows, result) {
     return console.error(error_response, err);
   }
   var table_name = 'known_places';
-  var query = "CREATE TABLE "+table_name+" ( gid serial NOT NULL, name character varying(240), the_geom geometry, CONSTRAINT "+table_name+"_pkey PRIMARY KEY (gid), CONSTRAINT "+table_name+"_enforce_dims_geom CHECK (st_ndims(the_geom) = 2), CONSTRAINT "+table_name+"_enforce_geotype_geom CHECK (geometrytype(the_geom) = 'POINT'::text OR the_geom IS NULL), CONSTRAINT "+table_name+"_enforce_srid_geom CHECK (st_srid(the_geom) = 4326) ) WITH ( OIDS=FALSE );";
+  var query = "CREATE TABLE "+table_name+" ( " +
+    "gid serial NOT NULL, " +
+    "name character varying(240), " +
+    "the_geom geometry, " +
+    "CONSTRAINT "+table_name+"_pkey PRIMARY KEY (gid), " +
+    "CONSTRAINT "+table_name+"_enforce_dims_geom CHECK (st_ndims(the_geom) = 2), " +
+    "CONSTRAINT "+table_name+"_enforce_geotype_geom CHECK (geometrytype(the_geom) = 'POINT'::text OR the_geom IS NULL), " +
+    "CONSTRAINT "+table_name+"_enforce_srid_geom CHECK (st_srid(the_geom) = 4326) " +
+    ") WITH ( OIDS=FALSE );";
   pg(query, function(err, rows, result) {
     if(err) {
       return console.error(error_response, err);
@@ -51,7 +82,7 @@ function addKnownPlaces(err, rows, result) {
 
 function importMapPoints(places) {
   console.info('Importing places to DB')
-  var insert = 'INSERT INTO odpad (name, time_from, time_to) VALUES ($1::text, $2::timestamp, $3::timestamp);';
+  var insert = 'INSERT INTO odpad (place_name, time_from, time_to) VALUES ($1::text, $2::timestamp, $3::timestamp);';
   for (var i = 0; i < places.length; i++) {
     pg(insert, places[i], function(err, rows, result) {
       if(err) {
@@ -64,24 +95,6 @@ function importMapPoints(places) {
 function init_db(){
   pg('CREATE EXTENSION postgis;', createDBSchema);
 } 
-
-function flush_db(){
-  pg('DROP TABLE odpad;', function(err, rows, result){
-    var response = 'Table ODPAD dropped!';
-    console.log(response);
-    return response;
-  });
-  pg('DROP TABLE known_places;', function(err, rows, result){
-    var response = 'Table KNOWN_PLACES dropped!';
-    console.log(response);
-    return response;
-  });
-  pg('DROP TABLE odpad_import;', function(err, rows, result){
-    var response = 'Table ODPAD_IMPORT dropped!';
-    console.log(response);
-    return response;
-  });
-}
 
 function select_box(req, res, next){
   //clean these variables:
@@ -122,7 +135,6 @@ function select_all(req, res, next){
 module.exports = exports = {
   selectAll:        select_all,
   selectBox:        select_box,
-  flushDB:          flush_db,
   initDB:           init_db,
   importMapPoints:  importMapPoints
 };
