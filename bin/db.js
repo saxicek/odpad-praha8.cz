@@ -5,7 +5,6 @@ var pg_config   = config.pg_config,
     schema_name = config.schema_name;
 pg.connectionParameters = pg_config + '/' + schema_name;
 
-var points = require('../parkcoord.json');
 var error_response = "Schema already exists - bypassing db initialization step\n";
 
 function createDBSchema(err, rows, result) {
@@ -13,9 +12,19 @@ function createDBSchema(err, rows, result) {
     return console.error("DB connection unavailable, see README notes for setup assistance\n", err);
   }
   var table_name = 'odpad';
-  var query = "CREATE TABLE "+table_name+" ( gid serial NOT NULL, name character varying(240), time_from TIMESTAMP NOT NULL, time_to TIMESTAMP NOT NULL, the_geom geometry, CONSTRAINT "+table_name+ "_pkey PRIMARY KEY (gid), CONSTRAINT "+table_name+"_enforce_dims_geom CHECK (st_ndims(the_geom) = 2), CONSTRAINT "+table_name+"_enforce_geotype_geom CHECK (geometrytype(the_geom) = 'POINT'::text OR the_geom IS NULL),CONSTRAINT "+table_name+"_enforce_srid_geom CHECK (st_srid(the_geom) = 4326) ) WITH ( OIDS=FALSE );";
+  var query = "CREATE TABLE "+table_name+" ( gid serial NOT NULL," +
+    "name character varying(240), " +
+    "time_from TIMESTAMP NOT NULL, " +
+    "time_to TIMESTAMP NOT NULL, " +
+    "the_geom geometry, " +
+    "CONSTRAINT "+table_name+ "_pkey PRIMARY KEY (gid), " +
+    "CONSTRAINT "+table_name+"_enforce_dims_geom CHECK (st_ndims(the_geom) = 2), " +
+    "CONSTRAINT "+table_name+"_enforce_geotype_geom CHECK (geometrytype(the_geom) = 'POINT'::text OR the_geom IS NULL), " +
+    "CONSTRAINT "+table_name+"_enforce_srid_geom CHECK (st_srid(the_geom) = 4326), " +
+    "UNIQUE (name, time_from, time_to)" +
+    ") WITH ( OIDS=FALSE );";
   pg(query, addSpatialIndex);
-};
+}
 
 function addSpatialIndex(err, rows, result) {
   if(err) {
@@ -31,15 +40,6 @@ function addKnownPlaces(err, rows, result) {
   }
   var table_name = 'known_places';
   var query = "CREATE TABLE "+table_name+" ( gid serial NOT NULL, name character varying(240), the_geom geometry, CONSTRAINT "+table_name+"_pkey PRIMARY KEY (gid), CONSTRAINT "+table_name+"_enforce_dims_geom CHECK (st_ndims(the_geom) = 2), CONSTRAINT "+table_name+"_enforce_geotype_geom CHECK (geometrytype(the_geom) = 'POINT'::text OR the_geom IS NULL), CONSTRAINT "+table_name+"_enforce_srid_geom CHECK (st_srid(the_geom) = 4326) ) WITH ( OIDS=FALSE );";
-  pg(query, addOdpadImport);
-}
-
-function addOdpadImport(err, rows, result) {
-  if(err) {
-    return console.error(error_response, err);
-  }
-  var table_name = 'odpad_import';
-  var query = "CREATE TABLE "+table_name+" ( gid serial NOT NULL, place character VARYING(240) NOT NULL, time_from TIMESTAMP NOT NULL, time_to TIMESTAMP NOT NULL, CONSTRAINT "+table_name+ "_pkey PRIMARY KEY (gid) ) WITH ( OIDS=FALSE );";
   pg(query, function(err, rows, result) {
     if(err) {
       return console.error(error_response, err);
@@ -49,32 +49,17 @@ function addOdpadImport(err, rows, result) {
   });
 }
 
-function importMapPoints(err, rows, result) {
-  if(err) {
-    return console.error(error_response, err);
+function importMapPoints(places) {
+  console.info('Importing places to DB')
+  var insert = 'INSERT INTO odpad (name, time_from, time_to) VALUES ($1::text, $2::timestamp, $3::timestamp);';
+  for (var i = 0; i < places.length; i++) {
+    pg(insert, places[i], function(err, rows, result) {
+      if(err) {
+        return console.error(error_response, err);
+      }
+    });
   }
-  var insert = "Insert into odpad (name, the_geom) VALUES ";
-  var qpoints = points.map(insertMapPinSQL).join(",");
-  var query = insert + qpoints + ';';
-  console.log(query);
-  pg(query, function(err, rows, result) {
-    if(err) {
-      return console.error(error_response, err);
-    }
-    var response = 'Data import completed!';
-    return response;
-  });
-};
-
-function insertMapPinSQL(pin) {
-  var query = '';
-  var escape = /'/g
-  
-  if(typeof(pin) == 'object'){
-    query = "('" + pin.Name.replace(/'/g,"''") + "', ST_GeomFromText('POINT(" + pin.pos[0] +" "+ pin.pos[1] + " )', 4326))";  
-  }
-  return query;
-};
+}
 
 function init_db(){
   pg('CREATE EXTENSION postgis;', createDBSchema);
@@ -119,7 +104,7 @@ function select_box(req, res, next){
     res.send(rows);
     return rows;
   })
-};
+}
 
 function select_all(req, res, next){
   console.log(pg);
@@ -132,11 +117,12 @@ function select_all(req, res, next){
     res.send(result);
     return rows;
   });
-};
+}
 
 module.exports = exports = {
-  selectAll: select_all,
-  selectBox: select_box,
-  flushDB:   flush_db,
-  initDB:    init_db
+  selectAll:        select_all,
+  selectBox:        select_box,
+  flushDB:          flush_db,
+  initDB:           init_db,
+  importMapPoints:  importMapPoints
 };

@@ -12,10 +12,15 @@
     "requireindex": "1.0.x",
     "restify": "2.5.x",
     "pg-query": "~0.7.0",
-    "pg": "~2.8.3"
+    "pg": "~2.8.3",
+    "request": "2.24.x",
+    "cheerio": "0.12.4"
   },
   "devDependencies": {
-    "request": "2.24.x"
+    "mocha": "*",
+    "chai": "*",
+    "jshint": "2.3.0",
+    "sinon": "1.7.3"
   },
   "repository": {
     "type": "git",
@@ -24,7 +29,8 @@
   "scripts": {
     "start": "node server.js",
     "build": "npm run initdb",
-    "initdb": "node bin/bootstrap.js"
+    "initdb": "node bin/bootstrap.js",
+    "test": "make all"
   },
   "main": "server.js"
 }

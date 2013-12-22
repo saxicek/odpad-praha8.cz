@@ -2,6 +2,7 @@ var config      = require('config'),
     restify     = require('restify'),
     fs          = require('fs'),
     db          = require('./bin/db.js')
+    scraper     = require('./bin/scraper.js')
 
 var app         = restify.createServer()
 
@@ -15,6 +16,11 @@ app.get('/parks', db.selectAll);
 app.get('/status', function (req, res, next)
 {
   res.send("{status: 'ok'}");
+});
+app.get('/update', function (req, res, next) {
+  // fetch page, parse it and store to DB
+  scraper.scrapeContainers();
+  res.send({status: 'ok'});
 });
 
 app.get('/', function (req, res, next)

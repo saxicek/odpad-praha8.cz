@@ -2,14 +2,15 @@
 <html lang="en">
 <head>
   <title>Mapa velkoobjemového odpadu v Praze 8</title>
-    <link rel="stylesheet" href="//cdn.leafletjs.com/leaflet-0.5.1/leaflet.css" />
+  <link rel="stylesheet" href="//cdn.leafletjs.com/leaflet-0.5.1/leaflet.css" />
   <!--[if lte IE 8]>
-      <link rel="stylesheet" href="//cdn.leafletjs.com/leaflet-0.5.1/leaflet.ie.css" />
+    <link rel="stylesheet" href="//cdn.leafletjs.com/leaflet-0.5.1/leaflet.ie.css" />
   <![endif]-->
   <script src="//code.jquery.com/jquery-2.0.0.min.js"></script>
   <link href='//fonts.googleapis.com/css?family=Milonga' rel='stylesheet' type='text/css'>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" /> <style type="text/css">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <style type="text/css">
     body {
         padding: 0;
         margin: 0;
@@ -30,6 +31,7 @@
 </head>
 <body>
   <h1 id="title">Velkoobjemový odpad</h1>
+  <button id="update">Aktualizovat</button>
   <div id="map"></div>
   <script src="//cdn.leafletjs.com/leaflet-0.5.1/leaflet.js"></script>
   <script>
@@ -54,8 +56,8 @@
       //add the new pins
       var markerArray = new Array(data.length)
       for (var i = 0; i < data.length; i++){
-        park = data[i];
-        markerArray[i] = L.marker([park.lat, park.lon]).bindPopup(park.name);
+        container = data[i];
+        markerArray[i] = L.marker([container.lat, container.lon]).bindPopup(container.name);
       }
  
       markerLayerGroup = L.layerGroup(markerArray).addTo(map);
@@ -63,7 +65,11 @@
 
     map.on('dragend', getPins);
     map.on('zoomend', getPins);
-    map.whenReady(getPins)
+    map.whenReady(getPins);
+
+    $('#update').click(function() {
+        $.get('update');
+    });
 
   </script>
 </body>
