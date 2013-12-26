@@ -16,10 +16,7 @@ function createDBSchema(err, rows, result) {
   console.info('Dropping table ODPAD');
   pg('DROP TABLE odpad;', function(err, rows, result){
     console.info('Dropping table KNOWN_PLACES');
-    return pg('DROP TABLE known_places;', function(err, rows, result){
-      console.info('Dropping table ODPAD_IMPORT');
-      pg('DROP TABLE odpad_import;', createOdpadTable);
-    });
+    pg('DROP TABLE known_places;', createOdpadTable);
   });
 }
 
