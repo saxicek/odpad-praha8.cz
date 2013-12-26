@@ -98,7 +98,7 @@ function select_box(req, res, next){
     res.send(500, {http_status:400,error_msg: "this endpoint requires two pair of lat, long coordinates: lat1 lon1 lat2 lon2\na query 'limit' parameter can be optionally specified as well."});
     return console.error('could not connect to postgres', err);
   }
-  pg('SELECT gid,name,ST_X(the_geom) as lon,ST_Y(the_geom) as lat FROM odpad t WHERE ST_Intersects( ST_MakeEnvelope('+query.lon1+", "+query.lat1+", "+query.lon2+", "+query.lat2+", 4326), t.the_geom) LIMIT "+limit+';', function(err, rows, result){
+  pg('SELECT gid, place_name, ST_X(the_geom) as lon, ST_Y(the_geom) as lat FROM odpad t WHERE ST_Intersects( ST_MakeEnvelope('+query.lon1+", "+query.lat1+", "+query.lon2+", "+query.lat2+", 4326), t.the_geom) LIMIT "+limit+';', function(err, rows, result){
     if(err) {
       res.send(500, {http_status:500,error_msg: err})
       return console.error('error running query', err);
@@ -110,7 +110,7 @@ function select_box(req, res, next){
 
 function select_all(req, res, next){
   console.log(pg);
-  pg('SELECT gid,name,ST_X(the_geom) as lon,ST_Y(the_geom) as lat FROM odpad;', function(err, rows, result) {
+  pg('SELECT gid, place_name, ST_X(the_geom) as lon, ST_Y(the_geom) as lat FROM odpad;', function(err, rows, result) {
     console.log(config);
     if(err) {
       res.send(500, {http_status:500,error_msg: err})
