@@ -7,7 +7,7 @@ pg.connectionParameters = pg_config + '/' + schema_name;
 
 var error_response = "Schema already exists - bypassing db initialization step\n";
 
-function createDBSchema(err, rows, result) {
+function create_db_schema(err, rows, result) {
   if(err && err.code == "ECONNREFUSED"){
     return console.error("DB connection unavailable, see README notes for setup assistance\n", err);
   }
@@ -16,11 +16,11 @@ function createDBSchema(err, rows, result) {
   console.info('Dropping table ODPAD');
   pg('DROP TABLE odpad;', function(err, rows, result){
     console.info('Dropping table KNOWN_PLACES');
-    pg('DROP TABLE known_places;', createOdpadTable);
+    pg('DROP TABLE known_places;', create_odpad_table);
   });
 }
 
-function createOdpadTable(err, rows, result) {
+function create_odpad_table(err, rows, result) {
   var table_name = 'odpad';
   var query = "CREATE TABLE "+table_name+" ( " +
     "gid serial NOT NULL," +
@@ -35,19 +35,19 @@ function createOdpadTable(err, rows, result) {
     "UNIQUE (place_name, time_from, time_to)" +
     ") WITH ( OIDS=FALSE );";
   console.info('Creating table '+table_name);
-  pg(query, addSpatialIndex);
+  pg(query, add_spatial_index);
 }
 
-function addSpatialIndex(err, rows, result) {
+function add_spatial_index(err, rows, result) {
   if(err) {
     return console.error(error_response, err);
   }
   var table_name = 'odpad';
   console.info('Creating spatial index on table ODPAD');
-  pg("CREATE INDEX "+table_name+"_geom_gist ON "+table_name+" USING gist (the_geom);", addKnownPlaces);
+  pg("CREATE INDEX "+table_name+"_geom_gist ON "+table_name+" USING gist (the_geom);", add_known_places);
 }
 
-function addKnownPlaces(err, rows, result) {
+function add_known_places(err, rows, result) {
   if(err) {
     return console.error(error_response, err);
   }
@@ -69,11 +69,11 @@ function addKnownPlaces(err, rows, result) {
   });
 }
 
-function import_map_points(places) {
-  console.info('Importing places to DB')
+function import_containers(containers) {
+  console.info('Importing containers to DB')
   var insert = 'INSERT INTO odpad (place_name, time_from, time_to) VALUES ($1::text, $2::timestamp, $3::timestamp);';
-  for (var i = 0; i < places.length; i++) {
-    pg(insert, places[i], function(err, rows, result) {
+  for (var i = 0; i < containers.length; i++) {
+    pg(insert, containers[i], function(err, rows, result) {
       if(err) {
         return console.error(error_response, err);
       }
@@ -82,7 +82,7 @@ function import_map_points(places) {
 }
 
 function init_db(){
-  pg('CREATE EXTENSION postgis;', createDBSchema);
+  pg('CREATE EXTENSION postgis;', create_db_schema);
 } 
 
 function select_box(req, res, next){
@@ -134,10 +134,21 @@ function unknown_places(req, res, next){
   });
 }
 
+function add_place(place) {
+  console.info('Adding place to DB')
+  var insert = 'INSERT INTO known_places (place_name, the_geom) VALUES ($1::text, $2::geometry);';
+  pg(insert, place, function(err, rows, result) {
+    if(err) {
+      return console.error(error_response, err);
+    }
+  });
+}
+
 module.exports = exports = {
-  selectAll:        select_all,
-  selectBox:        select_box,
-  initDB:           init_db,
-  importMapPoints:  import_map_points,
-  unknownPlaces:    unknown_places
+  selectAll:         select_all,
+  selectBox:         select_box,
+  initDB:            init_db,
+  importContainers:  import_containers,
+  unknownPlaces:     unknown_places,
+  addPlace:          add_place
 };

@@ -11,18 +11,15 @@ app.use(restify.CORS())
 app.use(restify.fullResponse())
 
 // Routes
-app.get('/parks/within', db.selectBox);
-app.get('/parks', db.selectAll);
-app.get('/status', function (req, res, next)
-{
-  res.send("{status: 'ok'}");
-});
-app.get('/update', function (req, res, next) {
+app.get('/container/within', db.selectBox);
+app.get('/container', db.selectAll);
+app.get('/container/update', function (req, res, next) {
   // fetch page, parse it and store to DB
   scraper.scrapeContainers();
   res.send({status: 'ok'});
 });
-app.get('/places/unknown', db.unknownPlaces);
+app.get('/place/unknown', db.unknownPlaces);
+app.post('place', db.addPlace);
 
 app.get('/', function (req, res, next)
 {
@@ -33,6 +30,11 @@ app.get('/', function (req, res, next)
 });
 
 app.get(/\/(css|js|img)\/?.*/, restify.serveStatic({directory: './static/'}));
+
+app.get('/status', function (req, res, next)
+{
+  res.send("{status: 'ok'}");
+});
 
 app.listen(config.port, config.ip, function () {
   console.log( "Listening on " + config.ip + ", port " + config.port )
