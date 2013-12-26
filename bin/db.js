@@ -127,7 +127,7 @@ function select_all(req, res, next){
 
 function unknown_places(req, res, next){
   console.log(pg);
-  pg('SELECT o.place_name FROM odpad o WHERE o.the_geom IS NULL AND NOT EXISTS (SELECT kp.place_name FROM known_places kp WHERE kp.place_name = o.place_name);', function(err, rows, result) {
+  pg('SELECT DISTINCT o.place_name FROM odpad o WHERE o.the_geom IS NULL AND NOT EXISTS (SELECT kp.place_name FROM known_places kp WHERE kp.place_name = o.place_name);', function(err, rows, result) {
     console.log(config);
     if(err) {
       res.send(500, {http_status:500,error_msg: err})
