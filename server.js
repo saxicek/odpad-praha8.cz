@@ -22,6 +22,7 @@ app.get('/update', function (req, res, next) {
   scraper.scrapeContainers();
   res.send({status: 'ok'});
 });
+app.get('/places/unknown', db.unknownPlaces);
 
 app.get('/', function (req, res, next)
 {

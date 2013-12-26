@@ -37,6 +37,7 @@ function createOdpadTable(err, rows, result) {
     "CONSTRAINT "+table_name+"_enforce_srid_geom CHECK (st_srid(the_geom) = 4326), " +
     "UNIQUE (place_name, time_from, time_to)" +
     ") WITH ( OIDS=FALSE );";
+  console.info('Creating table '+table_name);
   pg(query, addSpatialIndex);
 }
 
@@ -45,6 +46,7 @@ function addSpatialIndex(err, rows, result) {
     return console.error(error_response, err);
   }
   var table_name = 'odpad';
+  console.info('Creating spatial index on table ODPAD');
   pg("CREATE INDEX "+table_name+"_geom_gist ON "+table_name+" USING gist (the_geom);", addKnownPlaces);
 }
 
@@ -54,14 +56,14 @@ function addKnownPlaces(err, rows, result) {
   }
   var table_name = 'known_places';
   var query = "CREATE TABLE "+table_name+" ( " +
-    "gid serial NOT NULL, " +
-    "name character varying(240), " +
+    "place_name character varying(240), " +
     "the_geom geometry, " +
-    "CONSTRAINT "+table_name+"_pkey PRIMARY KEY (gid), " +
+    "CONSTRAINT "+table_name+"_pkey PRIMARY KEY (place_name), " +
     "CONSTRAINT "+table_name+"_enforce_dims_geom CHECK (st_ndims(the_geom) = 2), " +
     "CONSTRAINT "+table_name+"_enforce_geotype_geom CHECK (geometrytype(the_geom) = 'POINT'::text OR the_geom IS NULL), " +
     "CONSTRAINT "+table_name+"_enforce_srid_geom CHECK (st_srid(the_geom) = 4326) " +
     ") WITH ( OIDS=FALSE );";
+  console.info('Creating table '+table_name);
   pg(query, function(err, rows, result) {
     if(err) {
       return console.error(error_response, err);
@@ -71,7 +73,7 @@ function addKnownPlaces(err, rows, result) {
   });
 }
 
-function importMapPoints(places) {
+function import_map_points(places) {
   console.info('Importing places to DB')
   var insert = 'INSERT INTO odpad (place_name, time_from, time_to) VALUES ($1::text, $2::timestamp, $3::timestamp);';
   for (var i = 0; i < places.length; i++) {
@@ -123,9 +125,23 @@ function select_all(req, res, next){
   });
 }
 
+function unknown_places(req, res, next){
+  console.log(pg);
+  pg('SELECT o.place_name FROM odpad o WHERE o.the_geom IS NULL AND NOT EXISTS (SELECT kp.place_name FROM known_places kp WHERE kp.place_name = o.place_name);', function(err, rows, result) {
+    console.log(config);
+    if(err) {
+      res.send(500, {http_status:500,error_msg: err})
+      return console.error('error running query', err);
+    }
+    res.send(result);
+    return rows;
+  });
+}
+
 module.exports = exports = {
   selectAll:        select_all,
   selectBox:        select_box,
   initDB:           init_db,
-  importMapPoints:  importMapPoints
+  importMapPoints:  import_map_points,
+  unknownPlaces:    unknown_places
 };

@@ -37,6 +37,8 @@
   <script>
     var map = L.map('map').setView([37.8, -122.3], 10);
     var markerLayerGroup = L.layerGroup().addTo(map);
+    var unknownPlaces = null;
+
     L.tileLayer('http://{s}.tile.stamen.com/terrain/{z}/{x}/{y}.png', {
       maxZoom: 18,
       minZoom: 5,
@@ -63,12 +65,24 @@
       markerLayerGroup = L.layerGroup(markerArray).addTo(map);
     }
 
+    function getUnknownPlaces() {
+      $.get('places/unknown', processUnknownPlaces, 'json');
+    }
+
+    function processUnknownPlaces(data) {
+      console.log(data);
+      // TODO: give user option to manually place pin for each place returned
+    }
+
     map.on('dragend', getPins);
     map.on('zoomend', getPins);
     map.whenReady(getPins);
 
     $('#update').click(function() {
-        $.get('update');
+      $.get('update', function(data) {
+        console.log(data);
+        getUnknownPlaces();
+      });
     });
 
   </script>
