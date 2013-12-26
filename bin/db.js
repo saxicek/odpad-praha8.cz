@@ -65,8 +65,7 @@ function addKnownPlaces(err, rows, result) {
     if(err) {
       return console.error(error_response, err);
     }
-    var response = 'Database initialized!';
-    return response;
+    return 'Database initialized!';
   });
 }
 
