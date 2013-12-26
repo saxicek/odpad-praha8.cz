@@ -34,16 +34,30 @@
   <button id="update">Aktualizovat</button>
   <div id="map"></div>
   <script src="//cdn.leafletjs.com/leaflet-0.5.1/leaflet.js"></script>
+  <script src="http://maps.google.com/maps/api/js?v=3.2&sensor=false"></script>
+  <script src="js/leaflet-google.js"></script>
   <script>
-    var map = L.map('map').setView([37.8, -122.3], 10);
+    var map = L.map('map').setView([50.11, 14.47], 13);
     var markerLayerGroup = L.layerGroup().addTo(map);
     var unknownPlaces = null;
 
-    L.tileLayer('http://{s}.tile.stamen.com/terrain/{z}/{x}/{y}.png', {
-      maxZoom: 18,
-      minZoom: 5,
-      attribution: 'Map tiles by <a href="http://stamen.com">Stamen Design</a>, under <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a>. Data by <a href="http://openstreetmap.org">OpenStreetMap</a>, under <a href="http://creativecommons.org/licenses/by-sa/3.0">CC BY SA</a>.'
-    }).addTo(map);
+    // Google Maps Layer
+    var googleLayer = new L.Google('ROADMAP');
+
+    // OpenStreet Maps Layer
+    var osmUrl='http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
+    var osmAttrib='Map data © OpenStreetMap contributors';
+    var osm = new L.TileLayer(osmUrl, {minZoom: 8, maxZoom: 20, attribution: osmAttrib});
+
+    // Nokia Maps Layer
+    var Nokia_normalDay = L.tileLayer('http://{s}.maptile.lbs.ovi.com/maptiler/v2/maptile/newest/normal.day/{z}/{x}/{y}/256/png8?token={devID}&app_id={appID}', {
+        attribution: 'Map &copy; <a href="http://developer.here.com">Nokia</a>, Data &copy; NAVTEQ 2012',
+        subdomains: '1234',
+        devID: 'Jh1fw3YBiKJpi3z63De9mg',
+        appID: 'y03pI8hp5RCNmh0kc7Rl'
+    });
+
+    map.addLayer(googleLayer);
 
     function getPins(e){
       bounds = map.getBounds();
