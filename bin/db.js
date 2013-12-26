@@ -75,7 +75,7 @@ function import_containers(containers) {
   for (var i = 0; i < containers.length; i++) {
     pg(insert, containers[i], function(err, rows, result) {
       if(err) {
-        return console.error(error_response, err);
+        return console.error('Cannot insert container to DB!', err);
       }
     });
   }
@@ -129,17 +129,18 @@ function unknown_places(req, res, next){
       res.send(500, {http_status:500,error_msg: err})
       return console.error('error running query', err);
     }
-    res.send(result);
-    return rows;
+    res.send(rows);
+    return next();
   });
 }
 
-function add_place(place) {
+function add_place(req, res, next) {
   console.info('Adding place to DB')
+  var place = [null, null];
   var insert = 'INSERT INTO known_places (place_name, the_geom) VALUES ($1::text, $2::geometry);';
   pg(insert, place, function(err, rows, result) {
     if(err) {
-      return console.error(error_response, err);
+      return console.error('Cannot add place to DB!', err);
     }
   });
 }
