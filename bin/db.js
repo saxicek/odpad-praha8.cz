@@ -124,7 +124,6 @@ function add_place(req, res, next) {
 
 module.exports = exports = {
   selectAll:         select_all,
-  selectBox:         select_box,
   initDB:            init_db,
   importContainers:  import_containers,
   unknownPlaces:     unknown_places,
