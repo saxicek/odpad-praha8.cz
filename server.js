@@ -11,7 +11,6 @@ app.use(restify.CORS())
 app.use(restify.fullResponse())
 
 // Routes
-app.get('/container/within', db.selectBox);
 app.get('/container', db.selectAll);
 app.get('/container/update', function (req, res, next) {
   // fetch page, parse it and store to DB

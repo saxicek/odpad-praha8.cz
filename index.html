@@ -249,9 +249,7 @@ var layerControl = L.control.layers(baseLayers, null, {
 var markerLayerGroup = L.layerGroup().addTo(map);
 
 function getPins(e){
-    bounds = map.getBounds();
-    url = "container/within?lat1=" + bounds.getSouthWest().lat + "&lon1=" + bounds.getSouthWest().lng + "&lat2=" + bounds.getNorthEast().lat + "&lon2=" + bounds.getNorthEast().lng;
-    $.get(url, pinTheMap, "json")
+    $.get("container", pinTheMap, "json")
 }
 
 function pinTheMap(data){
