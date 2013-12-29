@@ -1,22 +1,20 @@
-# Map of National Parks and Historic Sites
+# Map of waste container in Prague 8
 *powered by RESTify, PostGIS, and Leaflet maps*
 
-A basic instant mapping demo using PostGIS, node-restify, LeafLet Maps and map tiles from Stamen, to visualize the locations of major National Parks and Historic Sites.
+A basic instant mapping demo using PostGIS, node-restify, LeafLet Maps and map tiles from Google Maps, to visualize the locations of waste containers in Prague 8.
 
-<a href='http://nodegis-shifter.rhcloud.com/'><img src='https://www.openshift.com/sites/default/files/Parks_preview.png'/></a>
-
-Related post on OpenShift.com: [https://www.openshift.com/blogs/instant-mapping-applications-with-postgis-and-nodejs](https://www.openshift.com/blogs/instant-mapping-applications-with-postgis-and-nodejs)
+<a href='http://odpad-praha8.rhcloud.com/'><img src='https://www.openshift.com/sites/default/files/Parks_preview.png'/></a>
 
 ## Instant Provisioning on OpenShift
 To deploy a clone of this application using the [`rhc` command line tool](http://rubygems.org/gems/rhc), type:
 
-    rhc app create containers nodejs-0.10 postgresql-9.2 --from-code=https://github.com/ryanj/restify-postGIS.git
+    rhc app create containers nodejs-0.10 postgresql-9.2 --from-code=https://github.com/saxicek/odpad-praha8.cz.git
     
-Or, [link to a web-based **clone+deploy**](https://openshift.redhat.com/app/console/application_type/custom?name=containers&cartridges%5B%5D=nodejs-0.10&cartridges%5B%5D=postgresql-9.2&initial_git_url=https%3A%2F%2Fgithub.com%2Fryanj%2Frestify-postGIS.git) on [OpenShift Online](http://OpenShift.com) or [your own open cloud](http://openshift.github.io):
+Or, [link to a web-based **clone+deploy**](https://openshift.redhat.com/app/console/application_type/custom?name=containers&cartridges%5B%5D=nodejs-0.10&cartridges%5B%5D=postgresql-9.2&initial_git_url=https%3A%2F%2Fgithub.com%2Fsaxicek%2Fodpad-praha8.cz.git) on [OpenShift Online](http://OpenShift.com) or [your own open cloud](http://openshift.github.io):
 
-    https://openshift.redhat.com/app/console/application_type/custom?name=containers&cartridges%5B%5D=nodejs-0.10&cartridges%5B%5D=postgresql-9.2&initial_git_url=https%3A%2F%2Fgithub.com%2Fryanj%2Frestify-postGIS.git
+    https://openshift.redhat.com/app/console/application_type/custom?name=containers&cartridges%5B%5D=nodejs-0.10&cartridges%5B%5D=postgresql-9.2&initial_git_url=https%3A%2F%2Fgithub.com%2Fsaxicek%2Fodpad-praha8.cz.git
 
-A live demo is available at: [http://nodegis-shifter.rhcloud.com/](http://nodegis-shifter.rhcloud.com/)
+A live demo is available at: [http://odpad-praha8.rhcloud.com/](http://odpad-praha8.rhcloud.com/)
 
 ## Local Development
 Before you spin up a local server, you'll need a copy of the source code, and an installation of [nodejs](http://nodejs.org/).
@@ -83,12 +81,6 @@ You can verify that your port-forwarding tunnel is active, and that your environ
 
 This should provide a direct connection to your OpenShift-hosted database instance.
 
-Here you can verify that your application's [automatic database import procedures](https://www.openshift.com/blogs/instant-mapping-applications-with-postgis-and-nodejs#bootstrapping) have successfully completed, by checking the number of records in our DB table:
-
-    select count(*) from containers;
-
-The result should be `547`.  As usual, if you named your application something other than `containers`, you'll need to modify above the command to match your particular configuration.
-
 #### Starting your Local Webserver
 With your dependencies installed, your port-forwarding tunnel established, and your environment variables set, firing up a local server should be as simple as typing:
 
@@ -113,3 +105,13 @@ When you're ready, you can push changes to your OpenShift-hosted application env
 
 ## License
 This code is dedicated to the public domain to the maximum extent permitted by applicable law, pursuant to CC0 (http://creativecommons.org/publicdomain/zero/1.0/)
+
+## Acknowledgements
+
+This application makes use of or was inspired by the following open source projects:
+
+ - [BooLeaf](https://github.com/bmcbride/bootleaf)
+ - [Leaflet](http://leafletjs.com/)
+ - [Bootstrap](http://getbootstrap.com/)
+ - [OpenShift: Instant Mapping Applications with PostGIS and Nodejs](https://www.openshift.com/blogs/instant-mapping-applications-with-postgis-and-nodejs)
+ - [Google Maps tiles with Leaflet](http://matchingnotes.com/using-google-map-tiles-with-leaflet)
