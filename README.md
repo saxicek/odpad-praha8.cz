@@ -110,7 +110,7 @@ This code is dedicated to the public domain to the maximum extent permitted by a
 
 This application makes use of or was inspired by the following open source projects:
 
- - [BooLeaf](https://github.com/bmcbride/bootleaf)
+ - [BootLeaf](https://github.com/bmcbride/bootleaf)
  - [Leaflet](http://leafletjs.com/)
  - [Bootstrap](http://getbootstrap.com/)
  - [OpenShift: Instant Mapping Applications with PostGIS and Nodejs](https://www.openshift.com/blogs/instant-mapping-applications-with-postgis-and-nodejs)
