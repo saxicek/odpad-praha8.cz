@@ -40,6 +40,17 @@
     var map = L.map('map').setView([50.11, 14.47], 13);
     var markerLayerGroup = L.layerGroup().addTo(map);
     var unknownPlaces = null;
+    var currentDay = new Date();
+
+    function showNextDay() {
+        console.log('Next day');
+        return false;
+    }
+
+    function showPreviousDay() {
+        console.log('Prev day');
+        return false;
+    }
 
     // Google Maps Layer
     var googleLayer = new L.Google('ROADMAP');
@@ -49,15 +60,45 @@
     var osmAttrib='Map data © OpenStreetMap contributors';
     var osm = new L.TileLayer(osmUrl, {minZoom: 8, maxZoom: 20, attribution: osmAttrib});
 
-    // Nokia Maps Layer
+    // Nokia Maps Layers
     var Nokia_normalDay = L.tileLayer('http://{s}.maptile.lbs.ovi.com/maptiler/v2/maptile/newest/normal.day/{z}/{x}/{y}/256/png8?token={devID}&app_id={appID}', {
-        attribution: 'Map &copy; <a href="http://developer.here.com">Nokia</a>, Data &copy; NAVTEQ 2012',
+        attribution: 'Map &copy; <a href="http://developer.here.com">Nokia</a>, Data &copy; NAVTEQ 2014',
         subdomains: '1234',
         devID: 'Jh1fw3YBiKJpi3z63De9mg',
         appID: 'y03pI8hp5RCNmh0kc7Rl'
     });
-
+    var Nokia_satelliteYesLabelsDay = L.tileLayer('http://{s}.maptile.lbs.ovi.com/maptiler/v2/maptile/newest/hybrid.day/{z}/{x}/{y}/256/png8?token={devID}&app_id={appID}', {
+        attribution: 'Map &copy; <a href="http://developer.here.com">Nokia</a>, Data &copy; NAVTEQ 2014',
+        subdomains: '1234',
+        devID: 'Jh1fw3YBiKJpi3z63De9mg',
+        appID: 'y03pI8hp5RCNmh0kc7Rl'
+    });
     map.addLayer(googleLayer);
+
+    var DaySwitchControl = L.Control.extend({
+        options: {
+            position: 'topright'
+        },
+
+        onAdd: function (map) {
+            // create the control container with a particular class name
+            var container = L.DomUtil.create('div', 'leaflet-control-zoom leaflet-bar leaflet-control');
+            $('<a href="#" title="Předchozí den">&lt;</a>')
+                    .addClass('leaflet-control-zoom-in leaflet-bar-part leaflet-bar-part-top')
+                    .click(showPreviousDay)
+                    .appendTo(container);
+            $('<a href="#" title="Další den">&gt;</a>')
+                    .addClass('leaflet-control-zoom-in leaflet-bar-part leaflet-bar-part-bottom')
+                    .click(showNextDay)
+                    .appendTo(container);
+
+            // ... initialize other DOM elements, add listeners, etc.
+
+            return container;
+        }
+    });
+
+    map.addControl(new DaySwitchControl());
 
     function getPins(e){
       bounds = map.getBounds();
