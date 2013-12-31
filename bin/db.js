@@ -87,20 +87,20 @@ function init_db(){
 
 function select_all(req, res, next){
   console.log(pg);
-  pg('SELECT gid, place_name, ST_X(the_geom) as lon, ST_Y(the_geom) as lat FROM odpad WHERE time_to > NOW();', function(err, rows, result) {
+  pg('SELECT gid, place_name, ST_X(the_geom) AS lon, ST_Y(the_geom) AS lat FROM odpad WHERE time_to > NOW() AND the_geom IS NOT NULL;', function(err, rows, result) {
     console.log(config);
     if(err) {
       res.send(500, {http_status:500,error_msg: err})
       return console.error('error running query', err);
     }
-    res.send(result);
-    return rows;
+    res.send(rows);
+    return next();
   });
 }
 
 function unknown_places(req, res, next){
   console.log(pg);
-  pg('SELECT DISTINCT o.place_name FROM odpad o WHERE o.the_geom IS NULL AND NOT EXISTS (SELECT kp.place_name FROM known_places kp WHERE kp.place_name = o.place_name);', function(err, rows, result) {
+  pg('SELECT DISTINCT o.place_name AS place_name FROM odpad o WHERE o.the_geom IS NULL AND NOT EXISTS (SELECT kp.place_name FROM known_places kp WHERE kp.place_name = o.place_name);', function(err, rows, result) {
     console.log(config);
     if(err) {
       res.send(500, {http_status:500,error_msg: err})
