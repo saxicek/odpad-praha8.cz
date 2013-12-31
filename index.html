@@ -12,7 +12,6 @@
     <!-- Core CSS -->
     <link href="http://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" rel="stylesheet" type="text/css">
     <link href="http://netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.min.css" rel="stylesheet" type="text/css">
-    <link href="assets/typeahead.js/typeahead.js-bootstrap.css" rel="stylesheet" type="text/css"> <!--https://github.com/jharding/typeahead.js-bootstrap.css-->
     <link href="http://cdn.leafletjs.com/leaflet-0.7.1/leaflet.css" rel="stylesheet" type="text/css">
 
     <!-- Custom styles for this template -->
@@ -62,11 +61,6 @@
             padding: 6px 12px;
             font-size: 14px;
             border-radius: 4px;
-        }
-        .typeahead-header {
-            margin: 0 5px 5px 5px;
-            padding: 3px 0;
-            border-bottom: 1px solid #ccc;
         }
         .search-container {
             width: 250px;
@@ -125,8 +119,8 @@
 
     <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
     <!--[if lt IE 9]>
-    <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.6.2/html5shiv.js"></script>
-    <script src="//cdnjs.cloudflare.com/ajax/libs/respond.js/1.2.0/respond.js"></script>
+    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.6.2/html5shiv.js"></script>
+    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/respond.js/1.2.0/respond.js"></script>
     <![endif]-->
 </head>
 
@@ -143,6 +137,7 @@
     <div class="navbar-collapse collapse" id="navbar-collapse">
         <ul class="nav navbar-nav">
             <li><a href="#" data-toggle="collapse" data-target=".navbar-collapse.in" onclick="$('#aboutModal').modal('show'); return false;"><i class="fa fa-question-circle" style="color: white"></i>&nbsp;&nbsp;About</a></li>
+            <li class="odpad-unknown-places"></li>
         </ul>
     </div><!--/.navbar-collapse -->
 </div>
@@ -178,7 +173,6 @@
                             <ul class="list-group">
                                 <li class="list-group-item">Fullscreen mobile-friendly map template with responsive navbar and modal placeholders</li>
                                 <li class="list-group-item">jQuery loading of external GeoJSON files</li>
-                                <li class="list-group-item">Elegant client-side multi-layer feature search with autocomplete using <a href="http://twitter.github.io/typeahead.js/" target="_blank">typeahead.js</a></li>
                                 <li class="list-group-item">Integration of Bootstrap tables into Leaflet popups</li>
                                 <li class="list-group-item">Logic for minimizing layer control on small screens</li>
                                 <li class="list-group-item">Marker icons included in layer control</li>
@@ -195,103 +189,10 @@
 <script type="text/javascript" src="http://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script>
 <script type="text/javascript" src="http://cdn.leafletjs.com/leaflet-0.7.1/leaflet.js?2"></script>
 <script type="text/javascript" src="http://maps.google.com/maps/api/js?v=3.2&sensor=false"></script>
+<script type="text/javascript" src="http://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.5.2/underscore-min.js"></script>
+<script type="text/javascript" src="http://cdnjs.cloudflare.com/ajax/libs/backbone.js/1.0.0/backbone-min.js"></script>
 <script type="text/javascript" src="js/leaflet-google.js"></script>
-<script type="text/javascript">
-// Basemap Layers
-var mapquestOSM = L.tileLayer("http://{s}.mqcdn.com/tiles/1.0.0/osm/{z}/{x}/{y}.png", {
-    maxZoom: 19,
-    subdomains: ["otile1", "otile2", "otile3", "otile4"],
-    attribution: 'Tiles courtesy of <a href="http://www.mapquest.com/" target="_blank">MapQuest</a> <img src="http://developer.mapquest.com/content/osm/mq_logo.png">. Map data (c) <a href="http://www.openstreetmap.org/" target="_blank">OpenStreetMap</a> contributors, CC-BY-SA.'
-});
-// Google Maps Layer
-var googleRoad = new L.Google('ROADMAP');
-// Nokia Maps Layers
-var nokiaNormalDay = L.tileLayer('http://{s}.maptile.lbs.ovi.com/maptiler/v2/maptile/newest/normal.day/{z}/{x}/{y}/256/png8?token={devID}&app_id={appID}', {
-    attribution: 'Map &copy; <a href="http://developer.here.com">Nokia</a>, Data &copy; NAVTEQ 2014',
-    subdomains: '1234',
-    devID: 'Jh1fw3YBiKJpi3z63De9mg',
-    appID: 'y03pI8hp5RCNmh0kc7Rl'
-});
-var nokiaSatelliteYesLabelsDay = L.tileLayer('http://{s}.maptile.lbs.ovi.com/maptiler/v2/maptile/newest/hybrid.day/{z}/{x}/{y}/256/png8?token={devID}&app_id={appID}', {
-    attribution: 'Map &copy; <a href="http://developer.here.com">Nokia</a>, Data &copy; NAVTEQ 2014',
-    subdomains: '1234',
-    devID: 'Jh1fw3YBiKJpi3z63De9mg',
-    appID: 'y03pI8hp5RCNmh0kc7Rl'
-});
+<script type="text/javascript" src="js/odpad.js"></script>
 
-var map = L.map("map", {
-    zoom: 13,
-    center: [50.11, 14.47],
-    layers: [googleRoad]
-});
-
-var scaleControl = L.control.scale();
-
-// Larger screens get scale control and expanded layer control
-if (document.body.clientWidth <= 767) {
-    var isCollapsed = true;
-} else {
-    var isCollapsed = false;
-    map.addControl(scaleControl);
-};
-
-var baseLayers = {
-    "Google": googleRoad,
-    "MapQuest OSM": mapquestOSM,
-    "Nokia": nokiaNormalDay,
-    "Nokia satelitní": nokiaSatelliteYesLabelsDay
-};
-
-var layerControl = L.control.layers(baseLayers, null, {
-    collapsed: isCollapsed
-}).addTo(map);
-
-var markerLayerGroup = L.layerGroup().addTo(map);
-
-function getPins(e){
-    $.get("container", pinTheMap, "json")
-}
-
-function pinTheMap(data){
-    $("#loading").hide();
-    //clear the current pins
-    map.removeLayer(markerLayerGroup);
-
-    //add the new pins
-    var markerArray = new Array(data.length)
-    for (var i = 0; i < data.length; i++){
-        container = data[i];
-        markerArray[i] = L.marker([container.lat, container.lon]).bindPopup(container.name);
-    }
-
-    markerLayerGroup = L.layerGroup(markerArray).addTo(map);
-}
-
-function getUnknownPlaces() {
-    $.get('place/unknown', processUnknownPlaces, 'json');
-}
-
-function processUnknownPlaces(data) {
-    console.log(data);
-    // TODO: give user option to manually place pin for each place returned
-}
-
-map.whenReady(getPins);
-
-// Placeholder hack for IE
-if (navigator.appName == "Microsoft Internet Explorer") {
-    $("input").each( function () {
-        if ($(this).val() == "" && $(this).attr("placeholder") != "") {
-            $(this).val($(this).attr("placeholder"));
-            $(this).focus(function () {
-                if ($(this).val() == $(this).attr("placeholder")) $(this).val("");
-            });
-            $(this).blur(function () {
-                if ($(this).val() == "") $(this).val($(this).attr("placeholder"));
-            });
-        }
-    });
-}
-</script>
 </body>
 </html>
