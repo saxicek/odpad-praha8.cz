@@ -81,7 +81,7 @@ function import_containers(containers) {
   }
   // update geo location to containers
   console.info('Updating location of containers')
-  stmt = 'UPDATE odpad o SET o.the_geom = (SELECT the_geom FROM known_places p WHERE p.place_name = o.place_name);';
+  stmt = 'UPDATE odpad SET the_geom = (SELECT the_geom FROM known_places p WHERE p.place_name = place_name);';
   pg (stmt, function(err, rows, result) {
     if (err) {
       return console.error('Cannot update container locations!', err);
