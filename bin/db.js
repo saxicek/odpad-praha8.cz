@@ -71,14 +71,31 @@ function add_known_places(err, rows, result) {
 
 function import_containers(containers) {
   console.info('Importing containers to DB')
-  var insert = 'INSERT INTO odpad (place_name, time_from, time_to) VALUES ($1::text, $2::timestamp, $3::timestamp);';
+  var stmt = 'INSERT INTO odpad (place_name, time_from, time_to) VALUES ($1::text, $2::timestamp, $3::timestamp);';
   for (var i = 0; i < containers.length; i++) {
-    pg(insert, containers[i], function(err, rows, result) {
+    pg(stmt, containers[i], function(err, rows, result) {
       if(err) {
         return console.error('Cannot insert container to DB!', err);
       }
     });
   }
+  // update geo location to containers
+  console.info('Updating location of containers')
+  stmt = 'UPDATE odpad o SET o.the_geom = (SELECT the_geom FROM known_places p WHERE p.place_name = o.place_name);';
+  pg (stmt, function(err, rows, result) {
+    if (err) {
+      return console.error('Cannot update container locations!', err);
+    }
+
+    // update list of places
+    console.info('Updating list of places')
+    stmt = 'INSERT INTO known_places (place_name) SELECT DISTINCT o.place_name AS place_name FROM odpad o WHERE o.the_geom IS NULL AND NOT EXISTS (SELECT kp.place_name FROM known_places kp WHERE kp.place_name = o.place_name);';
+    pg (stmt, function(err, rows, result) {
+      if (err) {
+        return console.error('Cannot update list of places!', err);
+      }
+    });
+  });
 }
 
 function init_db(){
@@ -86,39 +103,50 @@ function init_db(){
 } 
 
 function select_all(req, res, next){
-  console.log(pg);
+  console.log('Selecting all containers');
   pg('SELECT gid, place_name, ST_X(the_geom) AS lon, ST_Y(the_geom) AS lat FROM odpad WHERE time_to > NOW() AND the_geom IS NOT NULL;', function(err, rows, result) {
     console.log(config);
     if(err) {
-      res.send(500, {http_status:500,error_msg: err})
+      res.json(500, {http_status:500,error_msg: err})
       return console.error('error running query', err);
     }
-    res.send(rows);
+    res.json(rows);
     return next();
   });
 }
 
 function unknown_places(req, res, next){
-  console.log(pg);
-  pg('SELECT DISTINCT o.place_name AS place_name FROM odpad o WHERE o.the_geom IS NULL AND NOT EXISTS (SELECT kp.place_name FROM known_places kp WHERE kp.place_name = o.place_name);', function(err, rows, result) {
+  console.log('Selecting known places');
+  pg('SELECT place_name FROM known_places WHERE the_geom IS NULL;', function(err, rows, result) {
     console.log(config);
     if(err) {
-      res.send(500, {http_status:500,error_msg: err})
+      res.json(500, {http_status:500,error_msg: err})
       return console.error('error running query', err);
     }
-    res.send(rows);
+    res.json(rows);
     return next();
   });
 }
 
-function add_place(req, res, next) {
-  console.info('Adding place to DB')
-  var place = [null, null];
-  var insert = 'INSERT INTO known_places (place_name, the_geom) VALUES ($1::text, $2::geometry);';
-  pg(insert, place, function(err, rows, result) {
+function add_place(place_name, lat, lng, callback) {
+  console.info('Adding place to DB');
+  var stmt = "INSERT INTO known_places (place_name, the_geom) VALUES ($1::text, ST_GeomFromText('POINT($2::text, $3::text)', 4326));";
+  pg(stmt, [place_name, lat, lng], function(err, rows, result) {
     if(err) {
-      return console.error('Cannot add place to DB!', err);
+      console.error('Cannot add place to DB!', err);
+      callback(err);
+      return;
     }
+    // update location of related containers
+    console.info('Updating related containers')
+    stmt = 'UPDATE odpad SET the_geom = (SELECT the_geom FROM known_places WHERE place_name = $1::text) WHERE place_name = $2::text;';
+    pg(stmt, [place_name, place_name], function(err, rows, result) {
+      if (err) {
+        console.error('Cannot update location of related containers!', err);
+        callback(err);
+      }
+      callback();
+    });
   });
 }
 

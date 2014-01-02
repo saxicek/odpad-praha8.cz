@@ -1,24 +1,36 @@
 var config      = require('config'),
     restify     = require('restify'),
     fs          = require('fs'),
-    db          = require('./bin/db.js')
-    scraper     = require('./bin/scraper.js')
+    db          = require('./bin/db.js'),
+    scraper     = require('./bin/scraper.js');
 
-var app         = restify.createServer()
+var app         = restify.createServer();
 
-app.use(restify.queryParser())
-app.use(restify.CORS())
-app.use(restify.fullResponse())
+app.use(restify.queryParser());
+app.use(restify.bodyParser());
+app.use(restify.CORS());
+app.use(restify.fullResponse());
 
 // Routes
 app.get('/container', db.selectAll);
+
 app.get('/container/update', function (req, res, next) {
   // fetch page, parse it and store to DB
   scraper.scrapeContainers();
   res.send({status: 'ok'});
 });
+
 app.get('/place/unknown', db.unknownPlaces);
-app.post('place', db.addPlace);
+
+app.put('/place', function (req, res, next) {
+  var err = db.addPlace(req.params.place_name, req.params.lat, req.params.lng, function(err) {
+    if (err) {
+      return next(new Error(err.message));
+    } else {
+      return next();
+    }
+  });
+});
 
 app.get('/', function (req, res, next)
 {
