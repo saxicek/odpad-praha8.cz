@@ -52,13 +52,13 @@ var layerControl = L.control.layers(baseLayers, null, {
 var markerLayerGroup = L.layerGroup().addTo(map);
 
 var PlaceModel = Backbone.Model.extend({
-  url: 'place',
+  url: '/place',
   idAttribute: 'place_name'
 });
 
 var UnknownPlacesCollection = Backbone.Collection.extend({
   model: PlaceModel,
-  url: 'place/unknown'
+  url: '/place/unknown'
 });
 
 var UnknownPlacesView = Backbone.View.extend({
@@ -72,7 +72,7 @@ var UnknownPlacesView = Backbone.View.extend({
 
     this.unknownPlaceModel = null;
   },
-  render: function(evt) {
+  render: function() {
     if (this.model.size() > 0) {
       menuItem = $('<a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="fa fa-exclamation"></i>&nbsp;&nbsp;Neznámá místa&nbsp;<span class="badge">'+this.model.size()+'</span>&nbsp;<b class="caret"></b></a>');
       // create items of dropdown menu
