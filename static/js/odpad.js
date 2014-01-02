@@ -1,3 +1,5 @@
+var mapCenter = [50.11, 14.47];
+
 // Basemap Layers
 var mapquestOSM = L.tileLayer("http://{s}.mqcdn.com/tiles/1.0.0/osm/{z}/{x}/{y}.png", {
   maxZoom: 19,
@@ -22,8 +24,8 @@ var nokiaSatelliteYesLabelsDay = L.tileLayer('http://{s}.maptile.lbs.ovi.com/map
 
 var map = L.map("map", {
   zoom: 13,
-  center: [50.11, 14.47],
-  layers: [googleRoad]
+  center: mapCenter,
+  layers: [mapquestOSM]
 });
 
 var scaleControl = L.control.scale();
@@ -50,7 +52,7 @@ var layerControl = L.control.layers(baseLayers, null, {
 var markerLayerGroup = L.layerGroup().addTo(map);
 
 var PlaceModel = Backbone.Model.extend({
-  urlRoot: '/place',
+  url: 'place',
   idAttribute: 'place_name'
 });
 
@@ -61,20 +63,68 @@ var UnknownPlacesCollection = Backbone.Collection.extend({
 
 var UnknownPlacesView = Backbone.View.extend({
   initialize: function() {
-    _.bindAll(this, 'render');
+    _.bindAll(this, 'render', 'setPlace', 'placementFinished', 'unknownPlaced', 'unknownNotPlaced', 'updateMarker');
 
     this.model = new UnknownPlacesCollection();
     this.model.fetch({reset: true});
     this.model.on('remove', this.render);
     this.model.on('reset', this.render);
+
+    this.unknownPlaceModel = null;
   },
   render: function(evt) {
     if (this.model.size() > 0) {
-      var menuItem = $('<a href="#" data-toggle="collapse" data-target=".navbar-collapse.in"><i class="fa fa-exclamation" style="color: white"></i>&nbsp;&nbsp;Neznámá místa&nbsp;<span class="badge">'+this.model.size()+'</span></a>');
-      this.$el.empty().append(menuItem);
+      menuItem = $('<a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="fa fa-exclamation"></i>&nbsp;&nbsp;Neznámá místa&nbsp;<span class="badge">'+this.model.size()+'</span>&nbsp;<b class="caret"></b></a>');
+      // create items of dropdown menu
+      var dropdown = $('<ul class="dropdown-menu"></ul>');
+
+      var that = this;
+      this.model.each(function(i) {
+        var item = $('<li><a href="#">' + i.get('place_name') + '</a></li>');
+        item.click(that.setPlace);
+        dropdown.append(item);
+      });
+      this.$el.empty().append(menuItem).append(dropdown);
     } else {
       this.$el.empty();
     }
+  },
+  setPlace: function(evt) {
+    //clear the current pins
+    map.removeLayer(markerLayerGroup);
+    //disable menu
+    menuItem.addClass('disabled');
+    // find related model
+    this.unknownPlaceModel = this.model.get($(evt.target).text())
+    // add pin and show info message
+    this.unknownPlaceMarker = L.marker(mapCenter, {draggable: true})
+      .bindPopup('<p>Umístěte mne na místo ' + this.unknownPlaceModel.id + '</p></div><button id="setPlaceOkButton" type="button" class="btn btn-primary btn-sm btn-block"">Hotovo</button><button id="setPlaceCancelButton" type="button" class="btn btn-link btn-sm btn-block"">Zrušit</button>', {closeButton: false})
+      .on('dragend', this.updateMarker)
+      .addTo(map)
+      .openPopup();
+    this.updateMarker();
+  },
+  // function opens marker popup and binds click actions on buttons
+  updateMarker: function() {
+    this.unknownPlaceMarker.openPopup();
+    $('#setPlaceOkButton').click(this.unknownPlaced);
+    $('#setPlaceCancelButton').click(this.unknownNotPlaced);
+  },
+  // function performs cleanup after placement of unknown place - removes marker and enables menu item
+  placementFinished: function() {
+    map.removeLayer(this.unknownPlaceMarker);
+    menuItem.removeClass('disabled');
+  },
+  // function is called whenever user confirms placement of unknown place
+  unknownPlaced: function() {
+    this.unknownPlaceModel.set('lat', this.unknownPlaceMarker.getLatLng().lat);
+    this.unknownPlaceModel.set('lng', this.unknownPlaceMarker.getLatLng().lng);
+    this.unknownPlaceModel.save();
+    this.placementFinished();
+  },
+  // function is called whenever user cancels placement of unknown place
+  unknownNotPlaced: function() {
+    this.placementFinished();
   }
 });
 
