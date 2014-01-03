@@ -24,12 +24,12 @@ function scrape_containers() {
     $('table.mcp8').find('tr:not(.mcp8TableHeaderRow)').each(function(i, elem) {
       // skip header
       var cells = $(this).find('td');
-      var container = cells.eq(0).find('span').text().replace(/'/g,"''");
+      var place_name = cells.eq(0).find('span').text().replace(/'/g,"''");
       var raw_date = cells.eq(1).find('span').text();
       var raw_time = cells.eq(2).find('span').text();
       var dates = util.parseDate(raw_date, raw_time);
-      containers[i] = [container, dates['time_from'], dates['time_to']];
-      console.info('Found place '+containers[i][0]+' ('+containers[i][1]+' - '+containers[i][2]+')');
+      containers[i] = {place_name: place_name, time_from: dates['time_from'], time_to: dates['time_to']};
+      console.info('Found place '+containers[i].place_name+' ('+containers[i].time_from+' - '+containers[i].time_to+')');
     });
 
     db.importContainers(containers);
