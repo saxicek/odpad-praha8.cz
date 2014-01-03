@@ -132,7 +132,7 @@ function loadData(e){
   // get containers with geo location
   $.get('container', pinTheMap, 'json');
   // get list of places where geo location is unknown
-  var view = new UnknownPlacesView({el: $("li.odpad-unknown-places")});
+  var view = new UnknownPlacesView({el: $("li.container-unknown-places")});
 }
 
 function pinTheMap(data){

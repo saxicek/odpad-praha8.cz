@@ -48,5 +48,5 @@ app.get('/status', function (req, res, next)
 });
 
 app.listen(config.port, config.ip, function () {
-  console.log( "Listening on " + config.ip + ", port " + config.port )
+  console.info( "Listening on " + config.ip + ", port " + config.port )
 });

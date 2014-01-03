@@ -1,5 +1,5 @@
 var config      = require('config'),
-    pg          = require('pg-query')
+    pg          = require('pg-query');
 
 var pg_config   = config.pg_config,
     schema_name = config.schema_name;
@@ -9,19 +9,26 @@ var error_response = "Schema already exists - bypassing db initialization step\n
 
 function create_db_schema(err, rows, result) {
   if(err && err.code == "ECONNREFUSED"){
-    return console.error("DB connection unavailable, see README notes for setup assistance\n", err);
+    console.error("DB connection unavailable, see README notes for setup assistance\n", err);
+    return;
   }
   // drop tables first
   // errors in this part are ignored - tables may and may not be present so DROP can fail
-  console.info('Dropping table ODPAD');
-  pg('DROP TABLE odpad;', function(err, rows, result){
-    console.info('Dropping table KNOWN_PLACES');
-    pg('DROP TABLE known_places;', create_odpad_table);
+  console.info('Dropping table container');
+  pg('DROP TABLE container;', function(err, rows, result){
+    console.info('Dropping table place');
+    pg('DROP TABLE place;', function(err, rows, result) {
+      create_container_table(null, null, null);
+    });
   });
 }
 
-function create_odpad_table(err, rows, result) {
-  var table_name = 'odpad';
+function create_container_table(err, rows, result) {
+  if(err) {
+    console.error(error_response, err);
+    return;
+  }
+  var table_name = 'container';
   var query = "CREATE TABLE "+table_name+" ( " +
     "gid serial NOT NULL," +
     "place_name character varying(240), " +
@@ -40,18 +47,20 @@ function create_odpad_table(err, rows, result) {
 
 function add_spatial_index(err, rows, result) {
   if(err) {
-    return console.error(error_response, err);
+    console.error(error_response, err);
+    return;
   }
-  var table_name = 'odpad';
-  console.info('Creating spatial index on table ODPAD');
-  pg("CREATE INDEX "+table_name+"_geom_gist ON "+table_name+" USING gist (the_geom);", add_known_places);
+  var table_name = 'container';
+  console.info('Creating spatial index on table container');
+  pg("CREATE INDEX "+table_name+"_geom_gist ON "+table_name+" USING gist (the_geom);", create_place_table);
 }
 
-function add_known_places(err, rows, result) {
+function create_place_table(err, rows, result) {
   if(err) {
-    return console.error(error_response, err);
+    console.error(error_response, err);
+    return;
   }
-  var table_name = 'known_places';
+  var table_name = 'place';
   var query = "CREATE TABLE "+table_name+" ( " +
     "place_name character varying(240), " +
     "the_geom geometry, " +
@@ -63,15 +72,16 @@ function add_known_places(err, rows, result) {
   console.info('Creating table '+table_name);
   pg(query, function(err, rows, result) {
     if(err) {
-      return console.error(error_response, err);
+      console.error(error_response, err);
+      return;
     }
-    return 'Database initialized!';
+    console.info('Database initialized!');
   });
 }
 
 function import_containers(containers) {
-  console.info('Importing containers to DB')
-  var stmt = 'INSERT INTO odpad (place_name, time_from, time_to) VALUES ($1::text, $2::timestamp, $3::timestamp);';
+  console.info('Importing containers to DB');
+  var stmt = 'INSERT INTO container (place_name, time_from, time_to) VALUES ($1::text, $2::timestamp, $3::timestamp);';
   for (var i = 0; i < containers.length; i++) {
     pg(stmt, containers[i], function(err, rows, result) {
       if(err) {
@@ -80,16 +90,16 @@ function import_containers(containers) {
     });
   }
   // update geo location to containers
-  console.info('Updating location of containers')
-  stmt = 'UPDATE odpad SET the_geom = (SELECT the_geom FROM known_places p WHERE p.place_name = place_name);';
+  console.info('Updating location of containers');
+  stmt = 'UPDATE container SET the_geom = (SELECT the_geom FROM place p WHERE p.place_name = place_name);';
   pg (stmt, function(err, rows, result) {
     if (err) {
       return console.error('Cannot update container locations!', err);
     }
 
     // update list of places
-    console.info('Updating list of places')
-    stmt = 'INSERT INTO known_places (place_name) SELECT DISTINCT o.place_name AS place_name FROM odpad o WHERE o.the_geom IS NULL AND NOT EXISTS (SELECT kp.place_name FROM known_places kp WHERE kp.place_name = o.place_name);';
+    console.info('Updating list of places');
+    stmt = 'INSERT INTO place (place_name) SELECT DISTINCT o.place_name AS place_name FROM container o WHERE o.the_geom IS NULL AND NOT EXISTS (SELECT kp.place_name FROM place kp WHERE kp.place_name = o.place_name);';
     pg (stmt, function(err, rows, result) {
       if (err) {
         return console.error('Cannot update list of places!', err);
@@ -103,12 +113,11 @@ function init_db(){
 } 
 
 function select_all(req, res, next){
-  console.log('Selecting all containers');
-  pg('SELECT gid, place_name, ST_X(the_geom) AS lon, ST_Y(the_geom) AS lat FROM odpad WHERE time_to > NOW() AND the_geom IS NOT NULL;', function(err, rows, result) {
-    console.log(config);
+  console.info('Selecting all containers');
+  pg('SELECT gid, place_name, ST_X(the_geom) AS lon, ST_Y(the_geom) AS lat FROM container WHERE time_to > NOW() AND the_geom IS NOT NULL;', function(err, rows, result) {
     if(err) {
-      res.json(500, {http_status:500,error_msg: err})
-      return console.error('error running query', err);
+      console.error('Error running select_all query', err);
+      return next(err);
     }
     res.json(rows);
     return next();
@@ -116,12 +125,11 @@ function select_all(req, res, next){
 }
 
 function unknown_places(req, res, next){
-  console.log('Selecting known places');
-  pg('SELECT place_name FROM known_places WHERE the_geom IS NULL;', function(err, rows, result) {
-    console.log(config);
+  console.info('Selecting unknown places');
+  pg('SELECT place_name FROM place WHERE the_geom IS NULL;', function(err, rows, result) {
     if(err) {
-      res.json(500, {http_status:500,error_msg: err})
-      return console.error('error running query', err);
+      console.error('Error running unknown_places query', err);
+      return next(err);
     }
     res.json(rows);
     return next();
@@ -130,7 +138,7 @@ function unknown_places(req, res, next){
 
 function add_place(place_name, lat, lng, callback) {
   console.info('Adding place to DB');
-  var stmt = "INSERT INTO known_places (place_name, the_geom) VALUES ($1::text, ST_SetSRID(ST_MakePoint($2::float, $3::float), 4326));";
+  var stmt = "INSERT INTO place (place_name, the_geom) VALUES ($1::text, ST_SetSRID(ST_MakePoint($2::float, $3::float), 4326));";
   pg(stmt, [place_name, lat, lng], function(err, rows, result) {
     if(err) {
       console.error('Cannot add place to DB!', err);
@@ -139,7 +147,7 @@ function add_place(place_name, lat, lng, callback) {
     }
     // update location of related containers
     console.info('Updating related containers')
-    stmt = 'UPDATE odpad SET the_geom = (SELECT the_geom FROM known_places WHERE place_name = $1::text) WHERE place_name = $2::text;';
+    stmt = 'UPDATE container SET the_geom = (SELECT the_geom FROM place WHERE place_name = $1::text) WHERE place_name = $2::text;';
     pg(stmt, [place_name, place_name], function(err, rows, result) {
       if (err) {
         console.error('Cannot update location of related containers!', err);
