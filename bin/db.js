@@ -138,8 +138,8 @@ function unknown_places(req, res, next){
 
 function add_place(place_name, lat, lng, callback) {
   console.info('Adding place to DB');
-  var stmt = "INSERT INTO place (place_name, the_geom) VALUES ($1::text, ST_SetSRID(ST_MakePoint($2::float, $3::float), 4326));";
-  pg(stmt, [place_name, lat, lng], function(err, rows, result) {
+  var stmt = "UPDATE place SET the_geom = ST_SetSRID(ST_MakePoint($1::float, $2::float), 4326) WHERE place_name = $3::text;";
+  pg(stmt, [lat, lng, place_name], function(err, rows, result) {
     if(err) {
       console.error('Cannot add place to DB!', err);
       callback(err);
