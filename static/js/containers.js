@@ -144,7 +144,7 @@ function pinTheMap(data){
   var markerArray = new Array(data.length)
   for (var i = 0; i < data.length; i++){
     container = data[i];
-    markerArray[i] = L.marker([container.lat, container.lon]).bindPopup(container.name);
+    markerArray[i] = L.marker([container.lat, container.lon]).bindPopup(container.place_name + ' ' + container.time_to);
   }
 
   markerLayerGroup = L.layerGroup(markerArray).addTo(map);

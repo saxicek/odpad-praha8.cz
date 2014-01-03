@@ -114,7 +114,7 @@ function init_db(){
 
 function select_all(req, res, next){
   console.info('Selecting all containers');
-  pg('SELECT gid, place_name, ST_X(the_geom) AS lon, ST_Y(the_geom) AS lat FROM container WHERE time_to > NOW() AND the_geom IS NOT NULL;', function(err, rows, result) {
+  pg('SELECT gid, place_name, ST_X(the_geom) AS lon, ST_Y(the_geom) AS lat, time_from, time_to FROM container WHERE time_to > NOW() AND the_geom IS NOT NULL;', function(err, rows, result) {
     if(err) {
       console.error('Error running select_all query', err);
       return next(err);
