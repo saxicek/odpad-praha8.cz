@@ -21,6 +21,7 @@ var nokiaSatelliteYesLabelsDay = L.tileLayer('http://{s}.maptile.lbs.ovi.com/map
   devID: 'Jh1fw3YBiKJpi3z63De9mg',
   appID: 'y03pI8hp5RCNmh0kc7Rl'
 });
+var geocoder = new google.maps.Geocoder();
 
 var map = L.map("map", {
   zoom: 13,
@@ -62,8 +63,9 @@ var UnknownPlacesCollection = Backbone.Collection.extend({
 
 var UnknownPlacesView = Backbone.View.extend({
   initialize: function() {
-    _.bindAll(this, 'render', 'setPlace', 'placementFinished', 'unknownPlaced',
-      'unknownNotPlaced', 'updateMarker', 'removeLocatedPlace');
+    _.bindAll(this, 'render', 'setPlace', 'setGeocodedPlace',
+      'afterMarkerDrag', 'placementFinished', 'unknownPlaced',
+      'unknownNotPlaced', 'removeLocatedPlace', 'updateMarkerBindings');
 
     this.model = new UnknownPlacesCollection();
     this.model.fetch({reset: true});
@@ -96,17 +98,28 @@ var UnknownPlacesView = Backbone.View.extend({
     menuItem.addClass('disabled');
     // find related model
     this.unknownPlaceModel = this.model.findWhere({place_name: $(evt.target).text()});
+    // try to geocode the location
+    geocoder.geocode({'address': this.unknownPlaceModel.get('place_name') + ', Praha'}, this.setGeocodedPlace);
+  },
+  setGeocodedPlace: function(data, status) {
+    var markerPos = mapCenter;
+    if (status == google.maps.GeocoderStatus.OK) {
+      markerPos = [data[0].geometry.location.mb, data[0].geometry.location.nb];
+    }
     // add pin and show info message
-    this.unknownPlaceMarker = L.marker(mapCenter, {draggable: true})
+    this.unknownPlaceMarker = L.marker(markerPos, {draggable: true})
       .bindPopup('<p>Umístěte mne na místo ' + this.unknownPlaceModel.get('place_name') + '</p></div><button id="setPlaceOkButton" type="button" class="btn btn-primary btn-sm btn-block"">Hotovo</button><button id="setPlaceCancelButton" type="button" class="btn btn-link btn-sm btn-block"">Zrušit</button>', {closeButton: false})
-      .on('dragend', this.updateMarker)
+      .on('dragend', this.afterMarkerDrag)
+      .on('popupopen', this.updateMarkerBindings)
       .addTo(map)
       .openPopup();
-    this.updateMarker();
+    this.afterMarkerDrag();
   },
   // function opens marker popup and binds click actions on buttons
-  updateMarker: function() {
+  afterMarkerDrag: function() {
     this.unknownPlaceMarker.openPopup();
+  },
+  updateMarkerBindings: function() {
     $('#setPlaceOkButton').click(this.unknownPlaced);
     $('#setPlaceCancelButton').click(this.unknownNotPlaced);
   },
