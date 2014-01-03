@@ -121,7 +121,7 @@ function select_all(req, res, next){
   console.info('Selecting all containers');
   pg('SELECT c.id, p.place_name, ST_X(p.the_geom) AS lon, ST_Y(p.the_geom) AS lat, c.time_from, c.time_to FROM container c JOIN place p ON p.id = c.place_id WHERE c.time_to > NOW() AND p.the_geom IS NOT NULL;', function(err, rows, result) {
     if(err) {
-      console.error('Error running select_all query', err);
+      console.error('Error running select_all query\n', err);
       return next(err);
     }
     res.send(rows);
@@ -133,7 +133,7 @@ function unknown_places(req, res, next){
   console.info('Selecting unknown places');
   pg('SELECT id, place_name FROM place WHERE the_geom IS NULL;', function(err, rows, result) {
     if(err) {
-      console.error('Error running unknown_places query', err);
+      console.error('Error running unknown_places query\n', err);
       return next(err);
     }
     res.send(rows);
@@ -141,12 +141,12 @@ function unknown_places(req, res, next){
   });
 }
 
-function add_place(id, place_name, lat, lng, callback) {
+function add_place(id, lat, lng, callback) {
   console.info('Updating place in DB');
-  var stmt = "UPDATE place SET the_geom = ST_SetSRID(ST_MakePoint($1::float, $2::float), 4326) WHERE id = $3::text;";
+  var stmt = "UPDATE place SET the_geom = ST_SetSRID(ST_MakePoint($1::float, $2::float), 4326) WHERE id = $3::integer;";
   pg(stmt, [lat, lng, id], function(err, rows, result) {
     if(err) {
-      console.error('Cannot update place in DB!', err);
+      console.error('Cannot update place in DB!\n', err);
       callback(err);
       return;
     }

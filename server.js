@@ -22,11 +22,12 @@ app.get('/container/update', function (req, res, next) {
 
 app.get('/place/unknown', db.unknownPlaces);
 
-app.put('/place', function (req, res, next) {
-  var err = db.addPlace(req.params.place_name, req.params.lat, req.params.lng, function(err) {
+app.put('/place/:id', function (req, res, next) {
+  db.addPlace(req.params.id, req.params.lat, req.params.lng, function(err) {
     if (err) {
       return next(new Error(err.message));
     } else {
+      res.send({status: 'ok'});
       return next();
     }
   });

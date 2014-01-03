@@ -52,8 +52,7 @@ var layerControl = L.control.layers(baseLayers, null, {
 var markerLayerGroup = L.layerGroup().addTo(map);
 
 var PlaceModel = Backbone.Model.extend({
-  url: '/place',
-  idAttribute: 'place_name'
+  urlRoot: '/place'
 });
 
 var UnknownPlacesCollection = Backbone.Collection.extend({
@@ -63,7 +62,8 @@ var UnknownPlacesCollection = Backbone.Collection.extend({
 
 var UnknownPlacesView = Backbone.View.extend({
   initialize: function() {
-    _.bindAll(this, 'render', 'setPlace', 'placementFinished', 'unknownPlaced', 'unknownNotPlaced', 'updateMarker');
+    _.bindAll(this, 'render', 'setPlace', 'placementFinished', 'unknownPlaced',
+      'unknownNotPlaced', 'updateMarker', 'removeLocatedPlace');
 
     this.model = new UnknownPlacesCollection();
     this.model.fetch({reset: true});
@@ -95,10 +95,10 @@ var UnknownPlacesView = Backbone.View.extend({
     //disable menu
     menuItem.addClass('disabled');
     // find related model
-    this.unknownPlaceModel = this.model.get($(evt.target).text())
+    this.unknownPlaceModel = this.model.findWhere({place_name: $(evt.target).text()});
     // add pin and show info message
     this.unknownPlaceMarker = L.marker(mapCenter, {draggable: true})
-      .bindPopup('<p>Umístěte mne na místo ' + this.unknownPlaceModel.id + '</p></div><button id="setPlaceOkButton" type="button" class="btn btn-primary btn-sm btn-block"">Hotovo</button><button id="setPlaceCancelButton" type="button" class="btn btn-link btn-sm btn-block"">Zrušit</button>', {closeButton: false})
+      .bindPopup('<p>Umístěte mne na místo ' + this.unknownPlaceModel.get('place_name') + '</p></div><button id="setPlaceOkButton" type="button" class="btn btn-primary btn-sm btn-block"">Hotovo</button><button id="setPlaceCancelButton" type="button" class="btn btn-link btn-sm btn-block"">Zrušit</button>', {closeButton: false})
       .on('dragend', this.updateMarker)
       .addTo(map)
       .openPopup();
@@ -119,12 +119,24 @@ var UnknownPlacesView = Backbone.View.extend({
   unknownPlaced: function() {
     this.unknownPlaceModel.set('lat', this.unknownPlaceMarker.getLatLng().lat);
     this.unknownPlaceModel.set('lng', this.unknownPlaceMarker.getLatLng().lng);
+    this.unknownPlaceModel.on('sync', this.removeLocatedPlace);
     this.unknownPlaceModel.save();
     this.placementFinished();
   },
   // function is called whenever user cancels placement of unknown place
   unknownNotPlaced: function() {
     this.placementFinished();
+  },
+  // called after place has been located and successfully synced to the server
+  // removes model from the list of unknown places
+  removeLocatedPlace: function(model) {
+    if (model === this.unknownPlaceModel) {
+      this.unknownPlaceModel = null;
+    }
+    // remove model from collection of unknown places
+    this.model.remove(model);
+    // inform those interested
+    this.model.trigger('place:locate');
   }
 });
 
