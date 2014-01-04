@@ -21,9 +21,13 @@ function parse_date(date, time) {
   var parsed_day = parsed_date[0];
 
   // detect year: if current day and month > parsed day and month then set next year
-  if ((new Date()) > (new Date(current_year, parsed_month, parsed_day))) {
+  var current_month = new Date().getMonth();
+  if (current_month - parsed_month > 6) {
     // set next year
     year = current_year + 1;
+  } else if (current_month - parsed_month < -6) {
+    // set previous year
+    year = current_year - 1;
   } else {
     // set this year
     year = current_year;
