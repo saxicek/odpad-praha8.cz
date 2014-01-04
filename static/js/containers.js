@@ -54,7 +54,7 @@ App.Views.UnknownPlaces = Backbone.View.extend({
   },
   render: function() {
     if (this.model.size() > 0) {
-      var menuItem = $('<a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="fa fa-exclamation"></i>&nbsp;&nbsp;Neznámá místa&nbsp;<span class="badge">'+this.model.size()+'</span>&nbsp;<b class="caret"></b></a>');
+      this.menuItem = $('<a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="fa fa-exclamation"></i>&nbsp;&nbsp;Neznámá místa&nbsp;<span class="badge">'+this.model.size()+'</span>&nbsp;<b class="caret"></b></a>');
       // create items of dropdown menu
       var dropdown = $('<ul class="dropdown-menu"></ul>');
 
@@ -64,16 +64,16 @@ App.Views.UnknownPlaces = Backbone.View.extend({
         item.click(that.setPlace);
         dropdown.append(item);
       });
-      this.$el.empty().append(menuItem).append(dropdown);
+      this.$el.empty().append(this.menuItem).append(dropdown);
     } else {
       this.$el.empty();
     }
   },
   setPlace: function(evt) {
     //clear the current pins
-    App.map.removeLayer(markerLayerGroup);
+    App.vent.trigger('unknownPlaces:placing');
     //disable menu
-    menuItem.addClass('disabled');
+    this.menuItem.addClass('disabled');
     // find related model
     this.unknownPlaceModel = this.model.findWhere({place_name: $(evt.target).text()});
     // try to geocode the location
@@ -104,7 +104,8 @@ App.Views.UnknownPlaces = Backbone.View.extend({
   // function performs cleanup after placement of unknown place - removes marker and enables menu item
   placementFinished: function() {
     App.map.removeLayer(this.unknownPlaceMarker);
-    menuItem.removeClass('disabled');
+    this.menuItem.removeClass('disabled');
+    App.vent.trigger('unknownPlaces:placingFinished');
   },
   // function is called whenever user confirms placement of unknown place
   unknownPlaced: function() {
@@ -127,22 +128,26 @@ App.Views.UnknownPlaces = Backbone.View.extend({
     // remove model from collection of unknown places
     this.model.remove(model);
     // inform those interested
-    this.model.trigger('place:locate');
+    App.vent.trigger('unknownPlaces:placed');
   }
 });
 
 App.Views.Containers = Backbone.View.extend({
   initialize: function() {
-    _.bindAll(this, 'render');
+    _.bindAll(this, 'render', 'removeMarkers', 'update');
 
     this.model.on('reset', this.render);
-    this.markerLayerGroup = L.layerGroup().addTo(App.map);
+    this.model.on('request', this.showLoading);
+    App.vent.on('unknownPlaces:placing', this.removeMarkers);
+    App.vent.on('unknownPlaces:placingFinished', this.render);
+    App.vent.on('unknownPlaces:placed', this.update);
+
+    this.markerLayerGroup = null;
   },
   render: function() {
     $("#loading").hide();
 
-    //clear the current pins
-    App.map.removeLayer(this.markerLayerGroup);
+    this.removeMarkers();
 
     //add the new pins
     var markerArray = this.model.map(function(m) {
@@ -150,6 +155,19 @@ App.Views.Containers = Backbone.View.extend({
         .bindPopup(m.get('place_name') + '<br />' + moment(m.get('time_from')).format('H:mm') + ' - ' + moment(m.get('time_to')).format('H:mm'), {closeButton: false});
     });
     this.markerLayerGroup = L.layerGroup(markerArray).addTo(App.map);
+  },
+  showLoading: function() {
+    $('#loading').show();
+  },
+  removeMarkers: function() {
+    if (this.markerLayerGroup) {
+      //clear the current pins
+      App.map.removeLayer(this.markerLayerGroup);
+      this.markerLayerGroup = null;
+    }
+  },
+  update: function() {
+    this.model.fetch({reset: true});
   }
 });
 
