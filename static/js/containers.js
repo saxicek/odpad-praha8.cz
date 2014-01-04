@@ -3,76 +3,45 @@ var App = {
   Collections:{},
   Views:{},
   Config: {},
-  MapLayers: {}
+  TileLayers: {}
 };
 
-var mapCenter = [50.11, 14.47];
-var vent = _.extend({}, Backbone.Events);
-
 // Basemap Layers
-var mapquestOSM = L.tileLayer("http://{s}.mqcdn.com/tiles/1.0.0/osm/{z}/{x}/{y}.png", {
+App.TileLayers.mapQuestOSM = L.tileLayer("http://{s}.mqcdn.com/tiles/1.0.0/osm/{z}/{x}/{y}.png", {
   maxZoom: 19,
   subdomains: ["otile1", "otile2", "otile3", "otile4"],
   attribution: 'Tiles courtesy of <a href="http://www.mapquest.com/" target="_blank">MapQuest</a> <img src="http://developer.mapquest.com/content/osm/mq_logo.png">. Map data (c) <a href="http://www.openstreetmap.org/" target="_blank">OpenStreetMap</a> contributors, CC-BY-SA.'
 });
 // Google Maps Layer
-var googleRoad = new L.Google('ROADMAP');
+App.TileLayers.googleRoad = new L.Google('ROADMAP');
 // Nokia Maps Layers
-var nokiaNormalDay = L.tileLayer('http://{s}.maptile.lbs.ovi.com/maptiler/v2/maptile/newest/normal.day/{z}/{x}/{y}/256/png8?token={devID}&app_id={appID}', {
+App.TileLayers.nokiaNormalDay = L.tileLayer('http://{s}.maptile.lbs.ovi.com/maptiler/v2/maptile/newest/normal.day/{z}/{x}/{y}/256/png8?token={devID}&app_id={appID}', {
   attribution: 'Map &copy; <a href="http://developer.here.com">Nokia</a>, Data &copy; NAVTEQ 2014',
   subdomains: '1234',
   devID: 'Jh1fw3YBiKJpi3z63De9mg',
   appID: 'y03pI8hp5RCNmh0kc7Rl'
 });
-var nokiaSatelliteYesLabelsDay = L.tileLayer('http://{s}.maptile.lbs.ovi.com/maptiler/v2/maptile/newest/hybrid.day/{z}/{x}/{y}/256/png8?token={devID}&app_id={appID}', {
+App.TileLayers.nokiaSatelliteLabelsDay = L.tileLayer('http://{s}.maptile.lbs.ovi.com/maptiler/v2/maptile/newest/hybrid.day/{z}/{x}/{y}/256/png8?token={devID}&app_id={appID}', {
   attribution: 'Map &copy; <a href="http://developer.here.com">Nokia</a>, Data &copy; NAVTEQ 2014',
   subdomains: '1234',
   devID: 'Jh1fw3YBiKJpi3z63De9mg',
   appID: 'y03pI8hp5RCNmh0kc7Rl'
 });
-var geocoder = new google.maps.Geocoder();
 
-var map = L.map("map", {
-  zoom: 13,
-  center: mapCenter,
-  layers: [mapquestOSM]
-});
-
-var scaleControl = L.control.scale();
-
-// Larger screens get scale control and expanded layer control
-if (document.body.clientWidth <= 767) {
-  var isCollapsed = true;
-} else {
-  var isCollapsed = false;
-  map.addControl(scaleControl);
-};
-
-var baseLayers = {
-  "Google": googleRoad,
-  "MapQuest OSM": mapquestOSM,
-  "Nokia": nokiaNormalDay,
-  "Nokia satelitní": nokiaSatelliteYesLabelsDay
-};
-
-var layerControl = L.control.layers(baseLayers, null, {
-  collapsed: isCollapsed
-}).addTo(map);
-
-var PlaceModel = Backbone.Model.extend({
+App.Models.Place = Backbone.Model.extend({
   urlRoot: '/place'
 });
 
-var UnknownPlacesCollection = Backbone.Collection.extend({
-  model: PlaceModel,
+App.Collections.UnknownPlaces = Backbone.Collection.extend({
+  model: App.Models.Place,
   url: '/place/unknown'
 });
 
-var ContainersCollection = Backbone.Collection.extend({
+App.Collections.Containers = Backbone.Collection.extend({
   url: '/container'
 });
 
-var UnknownPlacesView = Backbone.View.extend({
+App.Views.UnknownPlaces = Backbone.View.extend({
   initialize: function() {
     _.bindAll(this, 'render', 'setPlace', 'setGeocodedPlace',
       'afterMarkerDrag', 'placementFinished', 'unknownPlaced',
@@ -85,7 +54,7 @@ var UnknownPlacesView = Backbone.View.extend({
   },
   render: function() {
     if (this.model.size() > 0) {
-      menuItem = $('<a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="fa fa-exclamation"></i>&nbsp;&nbsp;Neznámá místa&nbsp;<span class="badge">'+this.model.size()+'</span>&nbsp;<b class="caret"></b></a>');
+      var menuItem = $('<a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="fa fa-exclamation"></i>&nbsp;&nbsp;Neznámá místa&nbsp;<span class="badge">'+this.model.size()+'</span>&nbsp;<b class="caret"></b></a>');
       // create items of dropdown menu
       var dropdown = $('<ul class="dropdown-menu"></ul>');
 
@@ -102,16 +71,16 @@ var UnknownPlacesView = Backbone.View.extend({
   },
   setPlace: function(evt) {
     //clear the current pins
-    map.removeLayer(markerLayerGroup);
+    App.map.removeLayer(markerLayerGroup);
     //disable menu
     menuItem.addClass('disabled');
     // find related model
     this.unknownPlaceModel = this.model.findWhere({place_name: $(evt.target).text()});
     // try to geocode the location
-    geocoder.geocode({'address': this.unknownPlaceModel.get('place_name') + ', Praha'}, this.setGeocodedPlace);
+    App.geocoder.geocode({'address': this.unknownPlaceModel.get('place_name') + ', Praha'}, this.setGeocodedPlace);
   },
   setGeocodedPlace: function(data, status) {
-    var markerPos = mapCenter;
+    var markerPos = App.Config.mapCenter;
     if (status == google.maps.GeocoderStatus.OK) {
       markerPos = [data[0].geometry.location.mb, data[0].geometry.location.nb];
     }
@@ -120,7 +89,7 @@ var UnknownPlacesView = Backbone.View.extend({
       .bindPopup('<p>Umístěte mne na místo ' + this.unknownPlaceModel.get('place_name') + '</p></div><button id="setPlaceOkButton" type="button" class="btn btn-primary btn-sm btn-block"">Hotovo</button><button id="setPlaceCancelButton" type="button" class="btn btn-link btn-sm btn-block"">Zrušit</button>', {closeButton: false})
       .on('dragend', this.afterMarkerDrag)
       .on('popupopen', this.updateMarkerBindings)
-      .addTo(map)
+      .addTo(App.map)
       .openPopup();
     this.afterMarkerDrag();
   },
@@ -134,7 +103,7 @@ var UnknownPlacesView = Backbone.View.extend({
   },
   // function performs cleanup after placement of unknown place - removes marker and enables menu item
   placementFinished: function() {
-    map.removeLayer(this.unknownPlaceMarker);
+    App.map.removeLayer(this.unknownPlaceMarker);
     menuItem.removeClass('disabled');
   },
   // function is called whenever user confirms placement of unknown place
@@ -162,41 +131,80 @@ var UnknownPlacesView = Backbone.View.extend({
   }
 });
 
-var ContainersView = Backbone.View.extend({
+App.Views.Containers = Backbone.View.extend({
   initialize: function() {
     _.bindAll(this, 'render');
 
     this.model.on('reset', this.render);
-    this.markerLayerGroup = L.layerGroup().addTo(map);
+    this.markerLayerGroup = L.layerGroup().addTo(App.map);
   },
   render: function() {
     $("#loading").hide();
 
     //clear the current pins
-    map.removeLayer(this.markerLayerGroup);
+    App.map.removeLayer(this.markerLayerGroup);
 
     //add the new pins
     var markerArray = this.model.map(function(m) {
       return L.marker([m.get('lon'), m.get('lat')])
         .bindPopup(m.get('place_name') + '<br />' + moment(m.get('time_from')).format('H:mm') + ' - ' + moment(m.get('time_to')).format('H:mm'), {closeButton: false});
     });
-    this.markerLayerGroup = L.layerGroup(markerArray).addTo(map);
+    this.markerLayerGroup = L.layerGroup(markerArray).addTo(App.map);
   }
 });
 
-function loadData(e){
+App.loadData = function() {
+
   // get list of places where geo location is unknown
-  var unknownPlaces = new UnknownPlacesCollection();
-  var unknownPlacesView = new UnknownPlacesView({el: $("li.container-unknown-places"), model: unknownPlaces});
+  var unknownPlaces = new App.Collections.UnknownPlaces();
+  var unknownPlacesView = new App.Views.UnknownPlaces({el: $("li.container-unknown-places"), model: unknownPlaces});
   unknownPlaces.fetch({reset: true});
 
   // get containers with geo location
-  var containers = new ContainersCollection();
-  var containersView = new ContainersView({model: containers});
+  var containers = new App.Collections.Containers();
+  var containersView = new App.Views.Containers({model: containers});
   containers.fetch({reset: true});
-}
+};
 
-map.whenReady(loadData);
+App.init = function() {
+  // set map center
+  App.Config.mapCenter = [50.11, 14.47];
+
+  // get Google geocoder
+  App.geocoder = new google.maps.Geocoder();
+
+  // instantiate global event handler
+  App.vent = _.extend({}, Backbone.Events);
+
+  // create map
+  App.map = L.map("map", {
+    zoom: 13,
+    center: App.Config.mapCenter,
+    layers: [App.TileLayers.mapQuestOSM]
+  });
+
+  // Larger screens get scale control and expanded layer control
+  var isCollapsed = true;
+  if (document.body.clientWidth > 767) {
+    isCollapsed = false;
+    App.map.addControl(L.control.scale());
+  }
+
+  var baseLayers = {
+    "Google": App.TileLayers.googleRoad,
+    "MapQuest OSM": App.TileLayers.mapQuestOSM,
+    "Nokia": App.TileLayers.nokiaNormalDay,
+    "Nokia satelitní": App.TileLayers.nokiaSatelliteLabelsDay
+  };
+
+  L.control.layers(baseLayers, null, {
+    collapsed: isCollapsed
+  }).addTo(App.map);
+
+  App.map.whenReady(App.loadData);
+};
+
+App.init();
 
 // Placeholder hack for IE
 if (navigator.appName == "Microsoft Internet Explorer") {
