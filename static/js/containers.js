@@ -1,4 +1,13 @@
+var App = {
+  Models:{},
+  Collections:{},
+  Views:{},
+  Config: {},
+  MapLayers: {}
+};
+
 var mapCenter = [50.11, 14.47];
+var vent = _.extend({}, Backbone.Events);
 
 // Basemap Layers
 var mapquestOSM = L.tileLayer("http://{s}.mqcdn.com/tiles/1.0.0/osm/{z}/{x}/{y}.png", {
@@ -50,8 +59,6 @@ var layerControl = L.control.layers(baseLayers, null, {
   collapsed: isCollapsed
 }).addTo(map);
 
-var markerLayerGroup = L.layerGroup().addTo(map);
-
 var PlaceModel = Backbone.Model.extend({
   urlRoot: '/place'
 });
@@ -61,14 +68,16 @@ var UnknownPlacesCollection = Backbone.Collection.extend({
   url: '/place/unknown'
 });
 
+var ContainersCollection = Backbone.Collection.extend({
+  url: '/container'
+});
+
 var UnknownPlacesView = Backbone.View.extend({
   initialize: function() {
     _.bindAll(this, 'render', 'setPlace', 'setGeocodedPlace',
       'afterMarkerDrag', 'placementFinished', 'unknownPlaced',
       'unknownNotPlaced', 'removeLocatedPlace', 'updateMarkerBindings');
 
-    this.model = new UnknownPlacesCollection();
-    this.model.fetch({reset: true});
     this.model.on('remove', this.render);
     this.model.on('reset', this.render);
 
@@ -153,26 +162,38 @@ var UnknownPlacesView = Backbone.View.extend({
   }
 });
 
-function loadData(e){
-  // get containers with geo location
-  $.get('container', pinTheMap, 'json');
-  // get list of places where geo location is unknown
-  var view = new UnknownPlacesView({el: $("li.container-unknown-places")});
-}
+var ContainersView = Backbone.View.extend({
+  initialize: function() {
+    _.bindAll(this, 'render');
 
-function pinTheMap(data){
-  $("#loading").hide();
-  //clear the current pins
-  map.removeLayer(markerLayerGroup);
+    this.model.on('reset', this.render);
+    this.markerLayerGroup = L.layerGroup().addTo(map);
+  },
+  render: function() {
+    $("#loading").hide();
 
-  //add the new pins
-  var markerArray = new Array(data.length)
-  for (var i = 0; i < data.length; i++){
-    container = data[i];
-    markerArray[i] = L.marker([container.lat, container.lon]).bindPopup(container.place_name + ' ' + container.time_to);
+    //clear the current pins
+    map.removeLayer(this.markerLayerGroup);
+
+    //add the new pins
+    var markerArray = this.model.map(function(m) {
+      return L.marker([m.get('lon'), m.get('lat')])
+        .bindPopup(m.get('place_name') + '<br />' + moment(m.get('time_from')).format('H:mm') + ' - ' + moment(m.get('time_to')).format('H:mm'), {closeButton: false});
+    });
+    this.markerLayerGroup = L.layerGroup(markerArray).addTo(map);
   }
+});
 
-  markerLayerGroup = L.layerGroup(markerArray).addTo(map);
+function loadData(e){
+  // get list of places where geo location is unknown
+  var unknownPlaces = new UnknownPlacesCollection();
+  var unknownPlacesView = new UnknownPlacesView({el: $("li.container-unknown-places"), model: unknownPlaces});
+  unknownPlaces.fetch({reset: true});
+
+  // get containers with geo location
+  var containers = new ContainersCollection();
+  var containersView = new ContainersView({model: containers});
+  containers.fetch({reset: true});
 }
 
 map.whenReady(loadData);
