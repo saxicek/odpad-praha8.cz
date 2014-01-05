@@ -41,6 +41,7 @@ App.Collections.Containers = Backbone.Collection.extend({
   url: '/container'
 });
 
+// view shows marker to localize unknown place and submits it to server
 App.Views.UnknownPlaces = Backbone.View.extend({
   initialize: function() {
     _.bindAll(this, 'render', 'setPlace', 'setGeocodedPlace',
@@ -132,6 +133,7 @@ App.Views.UnknownPlaces = Backbone.View.extend({
   }
 });
 
+// view shows containers on the map
 App.Views.Containers = Backbone.View.extend({
   initialize: function() {
     _.bindAll(this, 'render', 'removeMarkers', 'update');
@@ -171,11 +173,100 @@ App.Views.Containers = Backbone.View.extend({
   }
 });
 
+// view controls filtering of containers by day
+App.Views.ContainerFilter = Backbone.View.extend({
+  initialize: function() {
+    _.bindAll(this, 'render', 'goBack', 'goForward');
+
+    this.model.on('change', this.render);
+
+    // create menu items and register callbacks
+    $('<li class="disabled"><a href="#"><span class="glyphicon glyphicon-chevron-left"></span></a></li>')
+      .click(this.goBack)
+      .appendTo(this.$el);
+    this.$el.append('<li><p class="navbar-text"></p></li>');
+    $('<li><a href="#"><span class="glyphicon glyphicon-chevron-right"></span></a></li>')
+      .click(this.goForward)
+      .appendTo(this.$el);
+
+    // customize moment.js to show days only (not time) in calendar()
+    moment.lang('cs', {
+      'calendar': {
+        sameDay: "[dnes]",
+        nextDay: '[zítra]',
+        nextWeek: function () {
+          switch (this.day()) {
+            case 0:
+              return '[v neděli]';
+            case 1:
+            case 2:
+              return '[v] dddd';
+            case 3:
+              return '[ve středu]';
+            case 4:
+              return '[ve čtvrtek]';
+            case 5:
+              return '[v pátek]';
+            case 6:
+              return '[v sobotu]';
+          }
+        },
+        lastDay: '[včera]',
+        lastWeek: function () {
+          switch (this.day()) {
+            case 0:
+              return '[minulou neděli]';
+            case 1:
+            case 2:
+              return '[minulé] dddd';
+            case 3:
+              return '[minulou středu]';
+            case 4:
+            case 5:
+              return '[minulý] dddd';
+            case 6:
+              return '[minulou sobotu]';
+          }
+        },
+        sameElse: "L"
+      }
+    });
+  },
+  render: function() {
+    this.$('.navbar-text').text(this.model.get('filter_date').calendar());
+    return this;
+  },
+  goBack: function(e) {
+    if (moment().isSame(this.model.get('filter_date'), 'day')) {
+      // if filter day is today do nothing
+
+    } else if (moment().add('days', 1).isSame(this.model.get('filter_date'), 'day')) {
+      // if filter day is tomorrow set it to today and disable link
+      this.model.set('filter_date', moment(this.model.get('filter_date')).subtract('days', 1));
+      this.$el.children(':first').addClass('disabled');
+    } else {
+      // subtract one day from filter day
+      this.model.set('filter_date', moment(this.model.get('filter_date')).subtract('days', 1));
+    }
+
+    e.preventDefault();
+  },
+  goForward: function(e) {
+    if (moment().isSame(this.model.get('filter_date'), 'day')) {
+      // if filter day is today enable back button
+      this.$el.children(':first').removeClass('disabled');
+    }
+    this.model.set('filter_date', moment(this.model.get('filter_date')).add('days', 1));
+
+    e.preventDefault();
+  }
+});
+
 App.loadData = function() {
 
   // get list of places where geo location is unknown
   var unknownPlaces = new App.Collections.UnknownPlaces();
-  var unknownPlacesView = new App.Views.UnknownPlaces({el: $("li.container-unknown-places"), model: unknownPlaces});
+  var unknownPlacesView = new App.Views.UnknownPlaces({el: $('li.container-unknown-places'), model: unknownPlaces});
   unknownPlaces.fetch({reset: true});
 
   // get containers with geo location
@@ -220,9 +311,14 @@ App.init = function() {
   }).addTo(App.map);
 
   App.map.whenReady(App.loadData);
+
+  // create view for day filtering
+  App.filter_date = new Backbone.Model();
+  App.filter_date.set('filter_date', moment(0, 'HH'));
+  var view = new App.Views.ContainerFilter({el: $('ul.container-filter'), model: App.filter_date}).render();
 };
 
-App.init();
+$(document).ready(App.init);
 
 // Placeholder hack for IE
 if (navigator.appName == "Microsoft Internet Explorer") {
