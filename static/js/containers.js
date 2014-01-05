@@ -136,13 +136,16 @@ App.Views.UnknownPlaces = Backbone.View.extend({
 // view shows containers on the map
 App.Views.Containers = Backbone.View.extend({
   initialize: function() {
-    _.bindAll(this, 'render', 'removeMarkers', 'update');
+    _.bindAll(this, 'render', 'removeMarkers', 'update', 'filterByDate');
 
-    this.model.on('reset', this.render);
+    this.filteredModel = new App.Collections.Containers();
+    this.filteredModel.on('reset', this.render);
+    this.model.on('reset', this.filterByDate);
     this.model.on('request', this.showLoading);
     App.vent.on('unknownPlaces:placing', this.removeMarkers);
     App.vent.on('unknownPlaces:placingFinished', this.render);
     App.vent.on('unknownPlaces:placed', this.update);
+    App.filterDate.on('change', this.filterByDate);
 
     this.markerLayerGroup = null;
   },
@@ -152,7 +155,7 @@ App.Views.Containers = Backbone.View.extend({
     this.removeMarkers();
 
     //add the new pins
-    var markerArray = this.model.map(function(m) {
+    var markerArray = this.filteredModel.map(function(m) {
       return L.marker([m.get('lon'), m.get('lat')])
         .bindPopup(m.get('place_name') + '<br />' + moment(m.get('time_from')).format('H:mm') + ' - ' + moment(m.get('time_to')).format('H:mm'), {closeButton: false});
     });
@@ -168,8 +171,18 @@ App.Views.Containers = Backbone.View.extend({
       this.markerLayerGroup = null;
     }
   },
+  // fetch complete list of containers from server
   update: function() {
     this.model.fetch({reset: true});
+  },
+  // updates collection of shown models by filtering date
+  filterByDate: function(filterDate) {
+    this.filteredModel.reset(this.model.filter(function(m) {
+      var
+        model = m.get('time_from'),
+        filter = filterDate.get('filter_date');
+      return moment(m.get('time_from')).isSame(filterDate.get('filter_date'), 'day');
+    }));
   }
 });
 
@@ -310,12 +323,12 @@ App.init = function() {
     collapsed: isCollapsed
   }).addTo(App.map);
 
-  App.map.whenReady(App.loadData);
-
   // create view for day filtering
-  App.filter_date = new Backbone.Model();
-  App.filter_date.set('filter_date', moment(0, 'HH'));
-  var view = new App.Views.ContainerFilter({el: $('ul.container-filter'), model: App.filter_date}).render();
+  App.filterDate = new Backbone.Model();
+  App.filterDate.set('filter_date', moment(0, 'HH'));
+  var view = new App.Views.ContainerFilter({el: $('ul.container-filter'), model: App.filterDate}).render();
+
+  App.map.whenReady(App.loadData);
 };
 
 $(document).ready(App.init);
