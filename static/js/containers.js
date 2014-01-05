@@ -82,7 +82,7 @@ App.Views.UnknownPlaces = Backbone.View.extend({
   },
   setGeocodedPlace: function(data, status) {
     var markerPos = App.Config.mapCenter;
-    if (status == google.maps.GeocoderStatus.OK) {
+    if (status == google.maps.GeocoderStatus.OK && data[0].geometry.location_type != google.maps.GeocoderLocationType.APPROXIMATE) {
       markerPos = [data[0].geometry.location.mb, data[0].geometry.location.nb];
     }
     // add pin and show info message
