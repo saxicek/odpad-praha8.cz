@@ -16,13 +16,18 @@ function create_db_schema(err, rows, result) {
     console.error("DB connection unavailable, see README notes for setup assistance\n", err);
     return;
   }
+  //drop_db_schema();
+  create_place_table();
+}
+
+function drop_db_schema(err, rows, result) {
   // drop tables first
   // errors in this part are ignored - tables may and may not be present so DROP can fail
   console.info('Dropping table container');
   pg('DROP TABLE container;', function(err, rows, result){
     console.info('Dropping table place');
     pg('DROP TABLE place;', function(err, rows, result) {
-      create_place_table(null, null, null);
+      create_place_table();
     });
   });
 }
