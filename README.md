@@ -1,18 +1,18 @@
 # Map of waste container in Prague 8
 *powered by RESTify, PostGIS, and Leaflet maps*
 
-A basic instant mapping demo using PostGIS, node-restify, LeafLet Maps and map tiles from Google Maps, to visualize the locations of waste containers in Prague 8.
+A basic mapping application using PostGIS, node-restify, LeafLet Maps and map tiles from several map providers, to visualize the locations of waste containers in Prague 8.
 
-<a href='http://odpad-praha8.rhcloud.com/'><img src='https://www.openshift.com/sites/default/files/Parks_preview.png'/></a>
+<a href='http://odpad-praha8.rhcloud.com/'><img src='http://odpad-praha8.rhcloud.com/img/odpad.png'/></a>
 
 ## Instant Provisioning on OpenShift
 To deploy a clone of this application using the [`rhc` command line tool](http://rubygems.org/gems/rhc), type:
 
-    rhc app create containers nodejs-0.10 postgresql-9.2 --from-code=https://github.com/saxicek/odpad-praha8.cz.git
+    rhc app create containers nodejs-0.10 postgresql-9.2 cron-1.4 --from-code=https://github.com/saxicek/odpad-praha8.cz.git
     
-Or, [link to a web-based **clone+deploy**](https://openshift.redhat.com/app/console/application_type/custom?name=containers&cartridges%5B%5D=nodejs-0.10&cartridges%5B%5D=postgresql-9.2&initial_git_url=https%3A%2F%2Fgithub.com%2Fsaxicek%2Fodpad-praha8.cz.git) on [OpenShift Online](http://OpenShift.com) or [your own open cloud](http://openshift.github.io):
+Or, [link to a web-based **clone+deploy**](https://openshift.redhat.com/app/console/application_type/custom?name=containers&cartridges%5B%5D=nodejs-0.10&cartridges%5B%5D=postgresql-9.2&cartridges%5B%5D=cron-1.4&initial_git_url=https%3A%2F%2Fgithub.com%2Fsaxicek%2Fodpad-praha8.cz.git) on [OpenShift Online](http://OpenShift.com) or [your own open cloud](http://openshift.github.io):
 
-    https://openshift.redhat.com/app/console/application_type/custom?name=containers&cartridges%5B%5D=nodejs-0.10&cartridges%5B%5D=postgresql-9.2&initial_git_url=https%3A%2F%2Fgithub.com%2Fsaxicek%2Fodpad-praha8.cz.git
+    https://openshift.redhat.com/app/console/application_type/custom?name=containers&cartridges%5B%5D=nodejs-0.10&cartridges%5B%5D=postgresql-9.2&cartridges%5B%5D=cron-1.4&initial_git_url=https%3A%2F%2Fgithub.com%2Fsaxicek%2Fodpad-praha8.cz.git
 
 A live demo is available at: [http://odpad-praha8.rhcloud.com/](http://odpad-praha8.rhcloud.com/)
 
@@ -113,5 +113,7 @@ This application makes use of or was inspired by the following open source proje
  - [BootLeaf](https://github.com/bmcbride/bootleaf)
  - [Leaflet](http://leafletjs.com/)
  - [Bootstrap](http://getbootstrap.com/)
+ - [Moment.js](http://momentjs.com/)
+ - [Google Maps Javascript API](https://developers.google.com/maps/documentation/javascript/)
  - [OpenShift: Instant Mapping Applications with PostGIS and Nodejs](https://www.openshift.com/blogs/instant-mapping-applications-with-postgis-and-nodejs)
  - [Google Maps tiles with Leaflet](http://matchingnotes.com/using-google-map-tiles-with-leaflet)
