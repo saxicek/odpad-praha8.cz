@@ -1,0 +1,14 @@
+@media (max-width: 767px) {
+
+    ul.navbar-nav li.inline {
+        float: left;
+    }
+    ul.navbar-nav li.last-inline + li {
+        clear: both;
+    }
+    ul.navbar-nav li.inline a {
+        padding-top: 15px;
+        padding-bottom: 15px;
+    }
+
+}

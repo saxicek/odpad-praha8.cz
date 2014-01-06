@@ -194,11 +194,11 @@ App.Views.ContainerFilter = Backbone.View.extend({
     this.model.on('change', this.render);
 
     // create menu items and register callbacks
-    $('<li class="disabled"><a href="#"><span class="glyphicon glyphicon-chevron-left"></span></a></li>')
+    $('<li class="disabled inline"><a href="#"><span class="glyphicon glyphicon-chevron-left"></span></a></li>')
       .click(this.goBack)
       .appendTo(this.$el);
-    this.$el.append('<li><p class="navbar-text"></p></li>');
-    $('<li><a href="#"><span class="glyphicon glyphicon-chevron-right"></span></a></li>')
+    this.$el.append('<li class="inline"><p class="navbar-text"></p></li>');
+    $('<li class="inline last-inline"><a href="#"><span class="glyphicon glyphicon-chevron-right"></span></a></li>')
       .click(this.goForward)
       .appendTo(this.$el);
 
