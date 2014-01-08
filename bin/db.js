@@ -122,11 +122,11 @@ function import_containers(containers) {
   });
 }
 
-function select_all(req, res, next){
+function get_containers(req, res, next){
   console.info('Selecting all containers');
-  pg('SELECT c.id, p.place_name, ST_X(p.the_geom) AS lon, ST_Y(p.the_geom) AS lat, c.time_from, c.time_to FROM container c JOIN place p ON p.id = c.place_id WHERE c.time_to > NOW() AND p.the_geom IS NOT NULL;', function(err, rows, result) {
+  pg('SELECT id, time_from, time_to, place_id FROM container WHERE time_to > NOW();', function(err, rows, result) {
     if(err) {
-      console.error('Error running select_all query\n', err);
+      console.error('Error running get_containers query\n', err);
       return next(err);
     }
     res.send(rows);
@@ -134,11 +134,11 @@ function select_all(req, res, next){
   });
 }
 
-function unknown_places(req, res, next){
-  console.info('Selecting unknown places');
-  pg('SELECT id, place_name FROM place WHERE the_geom IS NULL;', function(err, rows, result) {
+function get_places(req, res, next){
+  console.info('Selecting places');
+  pg('SELECT id, place_name, ST_X(the_geom) AS lng, ST_Y(the_geom) AS lat FROM place;', function(err, rows, result) {
     if(err) {
-      console.error('Error running unknown_places query\n', err);
+      console.error('Error running get_places query\n', err);
       return next(err);
     }
     res.send(rows);
@@ -146,10 +146,10 @@ function unknown_places(req, res, next){
   });
 }
 
-function add_place(id, lat, lng, callback) {
+function locate_place(id, lat, lng, callback) {
   console.info('Updating place in DB');
   var stmt = "UPDATE place SET the_geom = ST_SetSRID(ST_MakePoint($1::float, $2::float), 4326) WHERE id = $3::integer;";
-  pg(stmt, [lat, lng, id], function(err, rows, result) {
+  pg(stmt, [lng, lat, id], function(err, rows, result) {
     if(err) {
       console.error('Cannot update place in DB!\n', err);
       callback(err);
@@ -160,9 +160,9 @@ function add_place(id, lat, lng, callback) {
 }
 
 module.exports = exports = {
-  selectAll:         select_all,
+  getContainers:     get_containers,
   initDB:            init_db,
   importContainers:  import_containers,
-  unknownPlaces:     unknown_places,
-  addPlace:          add_place
+  getPlaces:         get_places,
+  locatePlace:       locate_place
 };

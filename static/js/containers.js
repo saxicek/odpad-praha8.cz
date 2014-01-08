@@ -29,12 +29,14 @@ App.TileLayers.nokiaSatelliteLabelsDay = L.tileLayer('http://{s}.maptile.lbs.ovi
 });
 
 App.Models.Place = Backbone.Model.extend({
-  urlRoot: '/place'
+  hasLocation: function() {
+    return this.has('lat') && this.has('lng');
+  }
 });
 
-App.Collections.UnknownPlaces = Backbone.Collection.extend({
+App.Collections.Places = Backbone.Collection.extend({
   model: App.Models.Place,
-  url: '/place/unknown'
+  url: '/place'
 });
 
 App.Collections.Containers = Backbone.Collection.extend({
@@ -49,7 +51,7 @@ App.Views.GeoLocatePlace = Backbone.View.extend({
   },
   render: function() {
     // try to geocode the location
-    App.geocoder.geocode({'address': this.model.get('place_name') + ', Praha'}, this.setGeocodedPlace);
+    App.geocoder.geocode({'address': this.model.get('place_name') + ', Praha 8'}, this.setGeocodedPlace);
 
     //clear the current pins
     App.vent.trigger('geoLocatePlace:placementStarted');
@@ -83,7 +85,7 @@ App.Views.GeoLocatePlace = Backbone.View.extend({
     this.model.save({
       lat: this.marker.getLatLng().lat,
       lng: this.marker.getLatLng().lng
-    });
+    }, {wait: true});
     App.map.removeLayer(this.marker);
     App.vent.trigger('geoLocatePlace:placementFinished');
   },
@@ -97,24 +99,27 @@ App.Views.GeoLocatePlace = Backbone.View.extend({
 // view shows marker to localize unknown place and submits it to server
 App.Views.UnknownPlaces = Backbone.View.extend({
   initialize: function() {
-    _.bindAll(this, 'render', 'setPlace', 'enableMenu', 'updateModel');
+    _.bindAll(this, 'render', 'setPlace', 'enableMenu', 'updateFilter');
 
+    this.filteredModel = new App.Collections.Places();
+    this.filteredModel.on('reset', this.render);
     this.model.on({
-      remove: this.render,
-      reset: this.render,
-      change: this.updateModel
+      reset: this.updateFilter,
+      change: this.updateFilter
     });
     App.vent.on('geoLocatePlace:placementFinished', this.enableMenu);
     App.vent.on('geoLocatePlace:placementCanceled', this.enableMenu);
   },
   render: function() {
-    if (this.model.size() > 0) {
-      this.menuItem = $('<a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="fa fa-exclamation"></i>&nbsp;&nbsp;Neznámá místa&nbsp;<span class="badge">'+this.model.size()+'</span>&nbsp;<b class="caret"></b></a>');
+    if (this.filteredModel.size() > 0) {
+      this.menuItem = $('<a href="#" class="dropdown-toggle" data-toggle="dropdown">' +
+        '<i class="fa fa-exclamation"></i>&nbsp;&nbsp;Neznámá místa&nbsp;' +
+        '<span class="badge">'+this.filteredModel.size()+'</span>&nbsp;<b class="caret"></b></a>');
       // create items of dropdown menu
       var dropdown = $('<ul class="dropdown-menu"></ul>');
 
       var that = this;
-      this.model.each(function(i) {
+      this.filteredModel.each(function(i) {
         var item = $('<li><a href="#">' + i.get('place_name') + '</a></li>');
         item.click(that.setPlace);
         dropdown.append(item);
@@ -134,29 +139,29 @@ App.Views.UnknownPlaces = Backbone.View.extend({
   },
   enableMenu: function() {
     this.menuItem.removeClass('disabled');
-  } ,
-  updateModel: function(m) {
-    if (m.has('lat') && m.has('lng')) {
-      this.model.remove(m);
-    }
+  },
+  updateFilter: function(model)  {
+    this.filteredModel.reset(this.model.filter(function(m) {
+      return !m.hasLocation();
+    }));
   }
 });
 
 // view shows containers on the map
 App.Views.Containers = Backbone.View.extend({
   initialize: function() {
-    _.bindAll(this, 'render', 'removeMarkers', 'filterByDate');
+    _.bindAll(this, 'render', 'removeMarkers', 'updateFilter');
 
     this.filteredModel = new App.Collections.Containers();
     this.filteredModel.on('reset', this.render);
     this.model.on({
-      reset: this.filterByDate,
-      change: this.filterByDate,
+      reset: this.updateFilter,
       request: this.showLoading
     });
     App.vent.on('geoLocatePlace:placementStarted', this.removeMarkers);
     App.vent.on('geoLocatePlace:placementCanceled', this.render);
-    App.filterDate.on('change', this.filterByDate);
+    App.filterDate.on('change', this.updateFilter);
+    App.places.on('change', this.updateFilter);
 
     this.markerLayerGroup = null;
   },
@@ -167,8 +172,9 @@ App.Views.Containers = Backbone.View.extend({
 
     //add the new pins
     var markerArray = this.filteredModel.map(function(m) {
-      return L.marker([m.get('lon'), m.get('lat')])
-        .bindPopup(m.get('place_name') + '<br />' + moment(m.get('time_from')).format('H:mm') + ' - ' + moment(m.get('time_to')).format('H:mm'), {closeButton: false});
+      var place = App.places.get(m.get('place_id'));
+      return L.marker({lat: place.get('lat'), lng: place.get('lng')})
+        .bindPopup(place.get('place_name') + '<br />' + moment(m.get('time_from')).format('H:mm') + ' - ' + moment(m.get('time_to')).format('H:mm'), {closeButton: false});
     });
     this.markerLayerGroup = L.layerGroup(markerArray).addTo(App.map);
   },
@@ -182,10 +188,13 @@ App.Views.Containers = Backbone.View.extend({
       this.markerLayerGroup = null;
     }
   },
-  // updates collection of shown models by filtering date
-  filterByDate: function(filterDate) {
+  // updates collection of shown models by filtering date and location
+  updateFilter: function() {
     this.filteredModel.reset(this.model.filter(function(m) {
-      return moment(m.get('time_from')).isSame(filterDate.get('filter_date'), 'day');
+      // return containers for current day
+      return moment(m.get('time_from')).isSame(App.filterDate.get('filter_date'), 'day') &&
+        // and with location specified
+        App.places.get(m.get('place_id')).hasLocation();
     }));
   }
 });
@@ -305,16 +314,16 @@ App.Views.ContainerFilter = Backbone.View.extend({
 });
 
 App.loadData = function() {
+  // init places view
+  var unknownPlacesView = new App.Views.UnknownPlaces({el: $('li.container-unknown-places'), model: App.places});
+  // init containers view
+  var containersView = new App.Views.Containers({model: App.containers});
+  // load data to collections
+  App.places.fetch({reset: true, success: function() {
+    // load containers only after places are loaded
+    App.containers.fetch({reset: true});
+  }});
 
-  // get list of places where geo location is unknown
-  var unknownPlaces = new App.Collections.UnknownPlaces();
-  var unknownPlacesView = new App.Views.UnknownPlaces({el: $('li.container-unknown-places'), model: unknownPlaces});
-  unknownPlaces.fetch({reset: true});
-
-  // get containers with geo location
-  var containers = new App.Collections.Containers();
-  var containersView = new App.Views.Containers({model: containers});
-  containers.fetch({reset: true});
 };
 
 App.init = function() {
@@ -356,6 +365,10 @@ App.init = function() {
   App.filterDate = new Backbone.Model();
   App.filterDate.set('filter_date', moment(0, 'HH'));
   var view = new App.Views.ContainerFilter({el: $('ul.container-filter'), model: App.filterDate}).render();
+
+  // define application data collections
+  App.places = new App.Collections.Places();
+  App.containers = new App.Collections.Containers();
 
   App.map.whenReady(App.loadData);
 };

@@ -12,7 +12,7 @@ app.use(restify.CORS());
 app.use(restify.fullResponse());
 
 // Routes
-app.get('/container', db.selectAll);
+app.get('/container', db.getContainers);
 
 app.get('/container/update', function (req, res, next) {
   // fetch page, parse it and store to DB
@@ -20,14 +20,14 @@ app.get('/container/update', function (req, res, next) {
   res.send({status: 'ok'});
 });
 
-app.get('/place/unknown', db.unknownPlaces);
+app.get('/place', db.getPlaces);
 
 app.put('/place/:id', function (req, res, next) {
-  db.addPlace(req.params.id, req.params.lat, req.params.lng, function(err) {
+  db.locatePlace(req.params.id, req.params.lat, req.params.lng, function(err) {
     if (err) {
       return next(new Error(err.message));
     } else {
-      res.send({status: 'ok'});
+      res.send({id: req.params.id, lat: req.params.lat, lng: req.params.lng});
       return next();
     }
   });
