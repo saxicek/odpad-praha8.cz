@@ -89,18 +89,22 @@ App.Views.GeoLocatePlace = Backbone.View.extend({
     $('#setPlaceCancelButton').click(this.unknownNotPlaced);
   },
   // function is called whenever user confirms placement of unknown place
-  unknownPlaced: function() {
+  unknownPlaced: function(e) {
     this.model.save({
       lat: this.marker.getLatLng().lat,
       lng: this.marker.getLatLng().lng
     }, {wait: true});
     App.map.removeLayer(this.marker);
     App.vent.trigger('geoLocatePlace:placementFinished');
+
+    return e.preventDefault();
   },
   // function is called whenever user cancels placement of unknown place
-  unknownNotPlaced: function() {
+  unknownNotPlaced: function(e) {
     App.map.removeLayer(this.marker);
     App.vent.trigger('geoLocatePlace:placementCanceled');
+
+    return e.preventDefault();
   }
 });
 
@@ -143,6 +147,8 @@ App.Views.UnknownPlaces = Backbone.View.extend({
     var model = this.model.findWhere({place_name: $(evt.target).text()});
     // show the localization marker on the map
     var view = new App.Views.GeoLocatePlace({model: model}).render();
+
+    return evt.preventDefault();
   },
   enableMenu: function() {
     this.menuItem.removeClass('disabled');
