@@ -97,7 +97,7 @@ App.Views.GeoLocatePlace = Backbone.View.extend({
 // view shows marker to localize unknown place and submits it to server
 App.Views.UnknownPlaces = Backbone.View.extend({
   initialize: function() {
-    _.bindAll(this, 'render', 'setPlace', 'enableMenu');
+    _.bindAll(this, 'render', 'setPlace', 'enableMenu', 'updateModel');
 
     this.model.on({
       remove: this.render,
