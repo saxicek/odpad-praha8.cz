@@ -46,12 +46,17 @@ App.Collections.Containers = Backbone.Collection.extend({
 // view shows marker on the map and asks user to place it to correct location
 App.Views.GeoLocatePlace = Backbone.View.extend({
   initialize: function() {
-    _.bindAll(this, 'render', 'setGeocodedPlace', 'afterMarkerDrag',
-      'updateMarkerBindings', 'unknownPlaced', 'unknownNotPlaced');
+    _.bindAll(this, 'render', 'setGeocodedPlace', 'placeMarker',
+      'afterMarkerDrag', 'updateMarkerBindings', 'unknownPlaced',
+      'unknownNotPlaced');
   },
   render: function() {
-    // try to geocode the location
-    App.geocoder.geocode({'address': this.model.get('place_name') + ', Praha 8'}, this.setGeocodedPlace);
+    if (!this.model.hasLocation()) {
+      // try to geocode the location
+      App.geocoder.geocode({'address': this.model.get('place_name') + ', Praha 8'}, this.setGeocodedPlace);
+    } else {
+      this.placeMarker([this.model.get('lat'), this.model.get('lng')]);
+    }
 
     //clear the current pins
     App.vent.trigger('geoLocatePlace:placementStarted');
@@ -63,6 +68,9 @@ App.Views.GeoLocatePlace = Backbone.View.extend({
     if (status == google.maps.GeocoderStatus.OK && data[0].geometry.location_type != google.maps.GeocoderLocationType.APPROXIMATE) {
       markerPos = [data[0].geometry.location.mb, data[0].geometry.location.nb];
     }
+    this.placeMarker(markerPos);
+  },
+  placeMarker: function(markerPos) {
     // add pin and show info message
     this.marker = L.marker(markerPos, {draggable: true})
       .bindPopup('<p>Umístěte mne na místo ' + this.model.get('place_name') + '</p></div><button id="setPlaceOkButton" type="button" class="btn btn-primary btn-sm btn-block"">Hotovo</button><button id="setPlaceCancelButton" type="button" class="btn btn-link btn-sm btn-block"">Zrušit</button>', {closeButton: false})
@@ -99,7 +107,7 @@ App.Views.GeoLocatePlace = Backbone.View.extend({
 // view shows marker to localize unknown place and submits it to server
 App.Views.UnknownPlaces = Backbone.View.extend({
   initialize: function() {
-    _.bindAll(this, 'render', 'setPlace', 'enableMenu', 'updateFilter');
+    _.bindAll(this, 'render', 'setPlace', 'enableMenu', 'disableMenu', 'updateFilter');
 
     this.filteredModel = new App.Collections.Places();
     this.filteredModel.on('reset', this.render);
@@ -107,6 +115,7 @@ App.Views.UnknownPlaces = Backbone.View.extend({
       reset: this.updateFilter,
       change: this.updateFilter
     });
+    App.vent.on('geoLocatePlace:placementStarted', this.disableMenu);
     App.vent.on('geoLocatePlace:placementFinished', this.enableMenu);
     App.vent.on('geoLocatePlace:placementCanceled', this.enableMenu);
   },
@@ -130,8 +139,6 @@ App.Views.UnknownPlaces = Backbone.View.extend({
     }
   },
   setPlace: function(evt) {
-    //disable menu
-    this.menuItem.addClass('disabled');
     // find related model
     var model = this.model.findWhere({place_name: $(evt.target).text()});
     // show the localization marker on the map
@@ -139,6 +146,9 @@ App.Views.UnknownPlaces = Backbone.View.extend({
   },
   enableMenu: function() {
     this.menuItem.removeClass('disabled');
+  },
+  disableMenu: function() {
+    this.menuItem.addClass('disabled');
   },
   updateFilter: function(model)  {
     this.filteredModel.reset(this.model.filter(function(m) {
@@ -150,7 +160,7 @@ App.Views.UnknownPlaces = Backbone.View.extend({
 // view shows containers on the map
 App.Views.Containers = Backbone.View.extend({
   initialize: function() {
-    _.bindAll(this, 'render', 'removeMarkers', 'updateFilter');
+    _.bindAll(this, 'render', 'removeMarkers', 'updateFilter', 'updateMarkerBindings', 'movePlace');
 
     this.filteredModel = new App.Collections.Containers();
     this.filteredModel.on('reset', this.render);
@@ -171,12 +181,18 @@ App.Views.Containers = Backbone.View.extend({
     this.removeMarkers();
 
     //add the new pins
+    var updateMarkerBindings = this.updateMarkerBindings;
     var markerArray = this.filteredModel.map(function(m) {
       var place = App.places.get(m.get('place_id'));
       return L.marker({lat: place.get('lat'), lng: place.get('lng')})
-        .bindPopup(place.get('place_name') + '<br />' + moment(m.get('time_from')).format('H:mm') + ' - ' + moment(m.get('time_to')).format('H:mm'), {closeButton: false});
+        .bindPopup('<span>' + place.get('place_name') + '</span><br />' +
+            '<span>' + moment(m.get('time_from')).format('H:mm') + ' - ' + moment(m.get('time_to')).format('H:mm') + '</span><br />' +
+            '<a class="btn btn-link btn-xs" href="#" id="movePlaceButton">upravit</a> ', {closeButton: false})
+        .on('popupopen', updateMarkerBindings);
     });
     this.markerLayerGroup = L.layerGroup(markerArray).addTo(App.map);
+
+    return this;
   },
   showLoading: function() {
     $('#loading').show();
@@ -198,6 +214,17 @@ App.Views.Containers = Backbone.View.extend({
         // and with location specified
         App.places.get(m.get('place_id')).hasLocation();
     }));
+  },
+  updateMarkerBindings: function() {
+    $('#movePlaceButton').click(this.movePlace);
+  },
+  movePlace: function(evt) {
+    // find related model
+    var model = App.places.findWhere({place_name: $(evt.target).siblings().first().text()});
+    // show the localization marker on the map
+    var view = new App.Views.GeoLocatePlace({model: model}).render();
+
+    return evt.preventDefault();
   }
 });
 
@@ -284,7 +311,7 @@ App.Views.ContainerFilter = Backbone.View.extend({
       }
     }
 
-    e.preventDefault();
+    return e.preventDefault();
   },
   setNext: function(e) {
     if (!this.disabled) {
@@ -295,7 +322,7 @@ App.Views.ContainerFilter = Backbone.View.extend({
       this.model.set('filter_date', moment(this.model.get('filter_date')).add('days', 1));
     }
 
-    e.preventDefault();
+    return e.preventDefault();
   },
   // function enables filter buttons
   enableFilter: function() {
