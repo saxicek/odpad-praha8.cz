@@ -166,23 +166,39 @@
 
             <div class="modal-body">
                 <ul id="aboutTabs" class="nav nav-tabs">
-                    <li class="active"><a href="#about" data-toggle="tab"><i class="fa fa-question-circle"></i>&nbsp;About the project</a></li>
+                    <li class="active"><a href="#what" data-toggle="tab"><i class="fa fa-check-square-o"></i>&nbsp;&nbsp;Co</a></li>
+                    <li><a href="#who" data-toggle="tab"><i class="fa fa-user"></i>&nbsp;&nbsp;Kdo</a></li>
+                    <li><a href="#why" data-toggle="tab"><i class="fa fa-question-circle"></i>&nbsp;&nbsp;Proč</a></li>
+                    <li><a href="#how" data-toggle="tab"><i class="fa fa-wrench"></i>&nbsp;&nbsp;Jak</a></li>
                 </ul>
                 <div id="aboutTabsContent" class="tab-content" style="padding-top: 10px;">
-                    <div class="tab-pane fade active in" id="about">
-                        <p>A simple template for building web mapping applications with <a href="http://getbootstrap.com/">Bootstrap 3</a> and <a href="http://leafletjs.com/" target="_blank">Leaflet</a>.</p>
+                    <div class="tab-pane fade active in" id="what">
+                        <p>Mapa zobrazující kontejnery velkoobjemového odpadu v Praze 8 v daný den.</p>
                         <div class="panel panel-primary">
                             <div class="panel-heading">
-                                Features
+                                Co všechno to umí?
                             </div>
                             <ul class="list-group">
-                                <li class="list-group-item">Fullscreen mobile-friendly map template with responsive navbar and modal placeholders</li>
-                                <li class="list-group-item">jQuery loading of external GeoJSON files</li>
-                                <li class="list-group-item">Integration of Bootstrap tables into Leaflet popups</li>
-                                <li class="list-group-item">Logic for minimizing layer control on small screens</li>
-                                <li class="list-group-item">Marker icons included in layer control</li>
+                                <li class="list-group-item">Zobrazit na mapě kontejnery pro daný den.</li>
+                                <li class="list-group-item">Umožňuje výběr mapového podkladu.</li>
+                                <li class="list-group-item">Nastavit umístění kontejneru pro místa, která aplikace nezná.</li>
+                                <li class="list-group-item">Upravit umístění kontejneru.</li>
+                                <li class="list-group-item">Funguje i na mobilních zařízeních.</li>
                             </ul>
                         </div>
+                    </div>
+                    <div class="tab-pane fade in" id="who">
+                        <p>Libor Nenadál <a href="mailto:libor.nenadal@gmail.com">&lt;libor.nenadal@gmail.com&gt;</a></p>
+                    </div>
+                    <div class="tab-pane fade in" id="why">
+                        <p>Neznám Prahu 8 natolik dobře, abych si uměl vybrat ze seznamu zveřejňovaném na
+                            <a href="http://www.praha8.cz/Velkoobjemove-kontejnery">http://www.praha8.cz/Velkoobjemove-kontejnery</a>
+                            ten kontejner, který je poblíž mého bydliště a to dnes, zítra, ... Tak jsem data vizualizoval.</p>
+                    </div>
+                    <div class="tab-pane fade in" id="how">
+                        <p>Hlavní použité technologie jsou Node.js, Bootstrap, Leaflet.js, Postgresql, OpenShift. Projekt je
+                        zveřejněný pod volnou licencí na <a href="https://github.com/saxicek/odpad-praha8.cz">GitHubu</a>,
+                            uvítám pull requesty a bug reporty. :-) </p>
                     </div>
                 </div>
             </div>
