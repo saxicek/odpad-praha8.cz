@@ -1,3 +1,4 @@
+/* Fix placement of the date filter in horizontal view  */
 @media (max-width: 767px) {
 
     ul.navbar-nav li.inline {
@@ -11,4 +12,13 @@
         padding-bottom: 15px;
     }
 
+}
+
+/* Fix markers on Google Map tile layer */
+.leaflet-map-pane {
+    z-index: 2 !important;
+}
+
+.leaflet-google-layer {
+    z-index: 1 !important;
 }
