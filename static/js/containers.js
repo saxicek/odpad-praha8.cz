@@ -193,18 +193,24 @@ App.Views.Containers = Backbone.View.extend({
 // view controls filtering of containers by day
 App.Views.ContainerFilter = Backbone.View.extend({
   initialize: function() {
-    _.bindAll(this, 'render', 'goBack', 'goForward');
+    _.bindAll(this, 'render', 'setPrev', 'setNext', 'enableFilter', 'disableFilter');
 
     this.model.on('change', this.render);
+    this.disabled = false;
 
     // create menu items and register callbacks
-    $('<li class="disabled inline"><a href="#"><span class="glyphicon glyphicon-chevron-left"></span></a></li>')
-      .click(this.goBack)
+    $('<li class="disabled inline container-filter-prev"><a href="#"><span class="glyphicon glyphicon-chevron-left"></span></a></li>')
+      .click(this.setPrev)
       .appendTo(this.$el);
     this.$el.append('<li class="inline"><p class="navbar-text"></p></li>');
-    $('<li class="inline last-inline"><a href="#"><span class="glyphicon glyphicon-chevron-right"></span></a></li>')
-      .click(this.goForward)
+    $('<li class="inline last-inline container-filter-next"><a href="#"><span class="glyphicon glyphicon-chevron-right"></span></a></li>')
+      .click(this.setNext)
       .appendTo(this.$el);
+
+    // disable / enable filter on unknown place location
+    App.vent.on('geoLocatePlace:placementStarted', this.disableFilter);
+    App.vent.on('geoLocatePlace:placementCanceled', this.enableFilter);
+    App.vent.on('geoLocatePlace:placementFinished', this.enableFilter);
 
     // customize moment.js to show days only (not time) in calendar()
     moment.lang('cs', {
@@ -253,29 +259,48 @@ App.Views.ContainerFilter = Backbone.View.extend({
     this.$('.navbar-text').text(this.model.get('filter_date').calendar());
     return this;
   },
-  goBack: function(e) {
-    if (moment().isSame(this.model.get('filter_date'), 'day')) {
-      // if filter day is today do nothing
+  setPrev: function(e) {
+    if (!this.disabled) {
+      // update filter day
+      if (moment().isBefore(this.model.get('filter_date'), 'day')) {
+        // subtract one day from filter day
+        this.model.set('filter_date', moment(this.model.get('filter_date')).subtract('days', 1));
+      }
 
-    } else if (moment().add('days', 1).isSame(this.model.get('filter_date'), 'day')) {
-      // if filter day is tomorrow set it to today and disable link
-      this.model.set('filter_date', moment(this.model.get('filter_date')).subtract('days', 1));
-      this.$el.children(':first').addClass('disabled');
-    } else {
-      // subtract one day from filter day
-      this.model.set('filter_date', moment(this.model.get('filter_date')).subtract('days', 1));
+      // update button visibility
+      if (!moment().isBefore(this.model.get('filter_date'), 'day')) {
+        this.$('.container-filter-prev').addClass('disabled');
+      }
     }
 
     e.preventDefault();
   },
-  goForward: function(e) {
-    if (moment().isSame(this.model.get('filter_date'), 'day')) {
-      // if filter day is today enable back button
-      this.$el.children(':first').removeClass('disabled');
+  setNext: function(e) {
+    if (!this.disabled) {
+      if (moment().isSame(this.model.get('filter_date'), 'day')) {
+        // if filter day is today enable back button
+        this.$('.container-filter-prev').removeClass('disabled');
+      }
+      this.model.set('filter_date', moment(this.model.get('filter_date')).add('days', 1));
     }
-    this.model.set('filter_date', moment(this.model.get('filter_date')).add('days', 1));
 
     e.preventDefault();
+  },
+  // function enables filter buttons
+  enableFilter: function() {
+    this.disabled = false;
+    // check if Prev button can be enabled
+    if (moment().isBefore(this.model.get('filter_date'), 'day')) {
+      this.$('.container-filter-prev').removeClass('disabled');
+    }
+    // enable Next button
+    this.$('.container-filter-next').removeClass('disabled');
+  },
+  // function disables filter buttons
+  disableFilter: function() {
+    this.disabled = true;
+    this.$('.container-filter-prev').addClass('disabled');
+    this.$('.container-filter-next').addClass('disabled');
   }
 });
 
