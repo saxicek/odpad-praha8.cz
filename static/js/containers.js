@@ -193,6 +193,8 @@ App.Views.Containers = Backbone.View.extend({
     this.filteredModel.reset(this.model.filter(function(m) {
       // return containers for current day
       return moment(m.get('time_from')).isSame(App.filterDate.get('filter_date'), 'day') &&
+        // which are not yet removed
+        moment().isBefore(m.get('time_to')) &&
         // and with location specified
         App.places.get(m.get('place_id')).hasLocation();
     }));
