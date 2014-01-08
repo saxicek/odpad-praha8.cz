@@ -41,17 +41,71 @@ App.Collections.Containers = Backbone.Collection.extend({
   url: '/container'
 });
 
+// view shows marker on the map and asks user to place it to correct location
+App.Views.GeoLocatePlace = Backbone.View.extend({
+  initialize: function() {
+    _.bindAll(this, 'render', 'setGeocodedPlace', 'afterMarkerDrag',
+      'updateMarkerBindings', 'unknownPlaced', 'unknownNotPlaced');
+  },
+  render: function() {
+    // try to geocode the location
+    App.geocoder.geocode({'address': this.model.get('place_name') + ', Praha'}, this.setGeocodedPlace);
+
+    //clear the current pins
+    App.vent.trigger('geoLocatePlace:placementStarted');
+
+    return this;
+  },
+  setGeocodedPlace: function(data, status) {
+    var markerPos = App.Config.mapCenter;
+    if (status == google.maps.GeocoderStatus.OK && data[0].geometry.location_type != google.maps.GeocoderLocationType.APPROXIMATE) {
+      markerPos = [data[0].geometry.location.mb, data[0].geometry.location.nb];
+    }
+    // add pin and show info message
+    this.marker = L.marker(markerPos, {draggable: true})
+      .bindPopup('<p>Umístěte mne na místo ' + this.model.get('place_name') + '</p></div><button id="setPlaceOkButton" type="button" class="btn btn-primary btn-sm btn-block"">Hotovo</button><button id="setPlaceCancelButton" type="button" class="btn btn-link btn-sm btn-block"">Zrušit</button>', {closeButton: false})
+      .on('dragend', this.afterMarkerDrag)
+      .on('popupopen', this.updateMarkerBindings)
+      .addTo(App.map)
+      .openPopup();
+    this.afterMarkerDrag();
+  },
+  // function opens marker popup and binds click actions on buttons
+  afterMarkerDrag: function() {
+    this.marker.openPopup();
+  },
+  updateMarkerBindings: function() {
+    $('#setPlaceOkButton').click(this.unknownPlaced);
+    $('#setPlaceCancelButton').click(this.unknownNotPlaced);
+  },
+  // function is called whenever user confirms placement of unknown place
+  unknownPlaced: function() {
+    this.model.save({
+      lat: this.marker.getLatLng().lat,
+      lng: this.marker.getLatLng().lng
+    });
+    App.map.removeLayer(this.marker);
+    App.vent.trigger('geoLocatePlace:placementFinished');
+  },
+  // function is called whenever user cancels placement of unknown place
+  unknownNotPlaced: function() {
+    App.map.removeLayer(this.marker);
+    App.vent.trigger('geoLocatePlace:placementCanceled');
+  }
+});
+
 // view shows marker to localize unknown place and submits it to server
 App.Views.UnknownPlaces = Backbone.View.extend({
   initialize: function() {
-    _.bindAll(this, 'render', 'setPlace', 'setGeocodedPlace',
-      'afterMarkerDrag', 'placementFinished', 'unknownPlaced',
-      'unknownNotPlaced', 'removeLocatedPlace', 'updateMarkerBindings');
+    _.bindAll(this, 'render', 'setPlace', 'enableMenu');
 
-    this.model.on('remove', this.render);
-    this.model.on('reset', this.render);
-
-    this.unknownPlaceModel = null;
+    this.model.on({
+      remove: this.render,
+      reset: this.render,
+      change: this.updateModel
+    });
+    App.vent.on('geoLocatePlace:placementFinished', this.enableMenu);
+    App.vent.on('geoLocatePlace:placementCanceled', this.enableMenu);
   },
   render: function() {
     if (this.model.size() > 0) {
@@ -71,80 +125,37 @@ App.Views.UnknownPlaces = Backbone.View.extend({
     }
   },
   setPlace: function(evt) {
-    //clear the current pins
-    App.vent.trigger('unknownPlaces:placing');
     //disable menu
     this.menuItem.addClass('disabled');
     // find related model
-    this.unknownPlaceModel = this.model.findWhere({place_name: $(evt.target).text()});
-    // try to geocode the location
-    App.geocoder.geocode({'address': this.unknownPlaceModel.get('place_name') + ', Praha'}, this.setGeocodedPlace);
+    var model = this.model.findWhere({place_name: $(evt.target).text()});
+    // show the localization marker on the map
+    var view = new App.Views.GeoLocatePlace({model: model}).render();
   },
-  setGeocodedPlace: function(data, status) {
-    var markerPos = App.Config.mapCenter;
-    if (status == google.maps.GeocoderStatus.OK && data[0].geometry.location_type != google.maps.GeocoderLocationType.APPROXIMATE) {
-      markerPos = [data[0].geometry.location.mb, data[0].geometry.location.nb];
-    }
-    // add pin and show info message
-    this.unknownPlaceMarker = L.marker(markerPos, {draggable: true})
-      .bindPopup('<p>Umístěte mne na místo ' + this.unknownPlaceModel.get('place_name') + '</p></div><button id="setPlaceOkButton" type="button" class="btn btn-primary btn-sm btn-block"">Hotovo</button><button id="setPlaceCancelButton" type="button" class="btn btn-link btn-sm btn-block"">Zrušit</button>', {closeButton: false})
-      .on('dragend', this.afterMarkerDrag)
-      .on('popupopen', this.updateMarkerBindings)
-      .addTo(App.map)
-      .openPopup();
-    this.afterMarkerDrag();
-  },
-  // function opens marker popup and binds click actions on buttons
-  afterMarkerDrag: function() {
-    this.unknownPlaceMarker.openPopup();
-  },
-  updateMarkerBindings: function() {
-    $('#setPlaceOkButton').click(this.unknownPlaced);
-    $('#setPlaceCancelButton').click(this.unknownNotPlaced);
-  },
-  // function performs cleanup after placement of unknown place - removes marker and enables menu item
-  placementFinished: function() {
-    App.map.removeLayer(this.unknownPlaceMarker);
+  enableMenu: function() {
     this.menuItem.removeClass('disabled');
-    App.vent.trigger('unknownPlaces:placingFinished');
-  },
-  // function is called whenever user confirms placement of unknown place
-  unknownPlaced: function() {
-    this.unknownPlaceModel.set('lat', this.unknownPlaceMarker.getLatLng().lat);
-    this.unknownPlaceModel.set('lng', this.unknownPlaceMarker.getLatLng().lng);
-    this.unknownPlaceModel.on('sync', this.removeLocatedPlace);
-    this.unknownPlaceModel.save();
-    this.placementFinished();
-  },
-  // function is called whenever user cancels placement of unknown place
-  unknownNotPlaced: function() {
-    this.placementFinished();
-  },
-  // called after place has been located and successfully synced to the server
-  // removes model from the list of unknown places
-  removeLocatedPlace: function(model) {
-    if (model === this.unknownPlaceModel) {
-      this.unknownPlaceModel = null;
+  } ,
+  updateModel: function(m) {
+    if (m.has('lat') && m.has('lng')) {
+      this.model.remove(m);
     }
-    // remove model from collection of unknown places
-    this.model.remove(model);
-    // inform those interested
-    App.vent.trigger('unknownPlaces:placed');
   }
 });
 
 // view shows containers on the map
 App.Views.Containers = Backbone.View.extend({
   initialize: function() {
-    _.bindAll(this, 'render', 'removeMarkers', 'update', 'filterByDate');
+    _.bindAll(this, 'render', 'removeMarkers', 'filterByDate');
 
     this.filteredModel = new App.Collections.Containers();
     this.filteredModel.on('reset', this.render);
-    this.model.on('reset', this.filterByDate);
-    this.model.on('request', this.showLoading);
-    App.vent.on('unknownPlaces:placing', this.removeMarkers);
-    App.vent.on('unknownPlaces:placingFinished', this.render);
-    App.vent.on('unknownPlaces:placed', this.update);
+    this.model.on({
+      reset: this.filterByDate,
+      change: this.filterByDate,
+      request: this.showLoading
+    });
+    App.vent.on('geoLocatePlace:placementStarted', this.removeMarkers);
+    App.vent.on('geoLocatePlace:placementCanceled', this.render);
     App.filterDate.on('change', this.filterByDate);
 
     this.markerLayerGroup = null;
@@ -171,16 +182,9 @@ App.Views.Containers = Backbone.View.extend({
       this.markerLayerGroup = null;
     }
   },
-  // fetch complete list of containers from server
-  update: function() {
-    this.model.fetch({reset: true});
-  },
   // updates collection of shown models by filtering date
   filterByDate: function(filterDate) {
     this.filteredModel.reset(this.model.filter(function(m) {
-      var
-        model = m.get('time_from'),
-        filter = filterDate.get('filter_date');
       return moment(m.get('time_from')).isSame(filterDate.get('filter_date'), 'day');
     }));
   }
