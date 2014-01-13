@@ -1,7 +1,7 @@
 var config      = require('config'),
     request     = require('request'),
     cheerio     = require('cheerio'),
-    db          = require('./db.js')
+    db          = require('./db.js'),
     util        = require('./util.js');
 
 function scrape_containers() {

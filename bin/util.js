@@ -1,3 +1,5 @@
+var tm = require('time');
+
 /*
  * Function parses date and time interval
  */
@@ -34,8 +36,8 @@ function parse_date(date, time) {
   }
 
   return {
-    'time_from': new Date(year, parsed_month, parsed_day, parsed_time_from[0], parsed_time_from[1]),
-    'time_to': new Date(year, parsed_month, parsed_day, parsed_time_to[0], parsed_time_to[1])
+    'time_from': new tm.Date(year, parsed_month, parsed_day, parsed_time_from[0], parsed_time_from[1], 'Europe/Prague'),
+    'time_to': new tm.Date(year, parsed_month, parsed_day, parsed_time_to[0], parsed_time_to[1], 'Europe/Prague')
   }
 }
 
