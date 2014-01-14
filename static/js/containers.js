@@ -192,7 +192,7 @@ App.Views.Containers = Backbone.View.extend({
       var place = App.places.get(m.get('place_id'));
       return L.marker({lat: place.get('lat'), lng: place.get('lng')})
         .bindPopup('<span>' + place.get('place_name') + '</span><br />' +
-            '<span>' + moment(m.get('time_from')).format('H:mm') + ' - ' + moment(m.get('time_to')).format('H:mm') + '</span><br />' +
+            '<span>' + moment(m.get('time_from')).tz('Europe/Prague').format('H:mm') + ' - ' + moment(m.get('time_to')).tz('Europe/Prague').format('H:mm') + '</span><br />' +
             '<a class="btn btn-link btn-xs" href="#" id="movePlaceButton">upravit</a> ', {closeButton: false})
         .on('popupopen', updateMarkerBindings);
     });

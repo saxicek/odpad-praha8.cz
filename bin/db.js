@@ -72,8 +72,8 @@ function create_container_table(err, rows, result) {
   var table_name = 'container';
   var query = "CREATE TABLE "+table_name+" ( " +
     "id serial NOT NULL," +
-    "time_from TIMESTAMP NOT NULL, " +
-    "time_to TIMESTAMP NOT NULL, " +
+    "time_from TIMESTAMP WITH TIME ZONE NOT NULL, " +
+    "time_to TIMESTAMP WITH TIME ZONE NOT NULL, " +
     "place_id INTEGER REFERENCES place (id), " +
     "CONSTRAINT "+table_name+ "_pkey PRIMARY KEY (id), " +
     "UNIQUE (place_id, time_from, time_to)" +
@@ -111,7 +111,7 @@ function import_containers(containers) {
         return;
       }
       // insert container
-      stmt = 'INSERT INTO container (place_id, time_from, time_to) VALUES ($1::integer, $2::timestamp, $3::timestamp);';
+      stmt = "INSERT INTO container (place_id, time_from, time_to) VALUES ($1::integer, $2::timestamp AT TIME ZONE 'Europe/Prague', $3::timestamp AT TIME ZONE 'Europe/Prague');";
       pg(stmt, [rows[0].id, container.time_from, container.time_to], function(err, rows, result) {
         if(err) {
           return console.error('Cannot insert container to DB!\n', err);
@@ -124,7 +124,7 @@ function import_containers(containers) {
 
 function get_containers(req, res, next){
   console.info('Selecting all containers');
-  pg('SELECT id, time_from, time_to, place_id FROM container WHERE time_to > NOW();', function(err, rows, result) {
+  pg("SELECT id, time_from, time_to, place_id FROM container WHERE time_to > NOW();", function(err, rows, result) {
     if(err) {
       console.error('Error running get_containers query\n', err);
       return next(err);
