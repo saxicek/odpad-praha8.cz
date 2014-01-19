@@ -55,7 +55,7 @@ describe('util', function() {
       });
     });
 
-    it("should set date to previous year if current date < parsed date", function () {
+    it('should set date to previous year if current date < parsed date', function () {
       expect(util.parseDate('01.12.', '13.00-17.00')).to.eql({
         'time_from':new Date(2012, 11, 1, 13, 0),
         'time_to':new Date(2012, 11, 1, 17, 0)
