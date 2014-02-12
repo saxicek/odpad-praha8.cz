@@ -21,7 +21,8 @@ define([
     GeoLocatePlace = Backbone.View.extend({
       initialize:function () {
         _.bindAll(this, 'render', 'addMarker', 'afterMarkerDrag',
-          'updateMarkerBindings', 'unknownPlaced', 'unknownNotPlaced');
+          'updateMarkerBindings', 'unknownPlaced', 'unknownNotPlaced',
+          'saveLoc');
 
         //clear pins on the map
         vent.trigger('geoLocatePlace:placementStarted');
@@ -40,6 +41,7 @@ define([
         // add pin and show info message
         this.marker = L.marker(loc, {draggable:true})
           .bindPopup('<p>Umístěte mne na místo ' + this.model.get('place_name') + '</p></div><button id="setPlaceOkButton" type="button" class="btn btn-primary btn-sm btn-block"">Hotovo</button><button id="setPlaceCancelButton" type="button" class="btn btn-link btn-sm btn-block"">Zrušit</button>', {closeButton:false})
+          .on('dragstart', this.saveLoc)
           .on('dragend', this.afterMarkerDrag)
           .on('popupopen', this.updateMarkerBindings)
           .addTo(map)
@@ -48,6 +50,10 @@ define([
       },
       // function opens marker popup and binds click actions on buttons
       afterMarkerDrag:function () {
+        // check that marker is placed in Prague 8
+        if (!geoUtil.isValidLocation(this.marker.getLatLng().lat, this.marker.getLatLng().lng)) {
+          this.marker.setLatLng(this.previousLoc);
+        }
         this.marker.openPopup();
       },
       updateMarkerBindings:function () {
@@ -71,6 +77,9 @@ define([
         vent.trigger('geoLocatePlace:placementCanceled');
 
         return e.preventDefault();
+      },
+      saveLoc: function() {
+        this.previousLoc = this.marker.getLatLng();
       }
     }),
 

@@ -30,12 +30,21 @@ define([
           cb(config.mapCenter);
         }
       });
+    },
+
+    // validates location - should be in Prague 8
+    isValidLocation = function(lat, lng) {
+      return lat < config.borders.maxLat &&
+        lat > config.borders.minLat &&
+        lng < config.borders.maxLng &&
+        lng > config.borders.minLng;
     }
     ;
 
   return {
     geoLocate: geoLocate,
-    locationAddress: locationAddress
+    locationAddress: locationAddress,
+    isValidLocation: isValidLocation
   };
 
 });
