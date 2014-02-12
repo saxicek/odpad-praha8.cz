@@ -22,3 +22,11 @@
 .leaflet-google-layer {
     z-index: 1 !important;
 }
+
+/* Edit location visible only on hover */
+.containers-edit > a.movePlaceButton {
+    visibility: hidden;
+}
+.containers-edit:hover > a.movePlaceButton {
+    visibility: visible;
+}

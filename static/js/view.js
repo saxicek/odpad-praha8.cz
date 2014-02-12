@@ -170,9 +170,9 @@ define([
         var markerArray = this.filteredModel.map(function (m) {
           var place = appState.places.get(m.get('place_id'));
           return L.marker({lat:place.get('lat'), lng:place.get('lng')})
-            .bindPopup('<span>' + place.get('place_name') + '</span><br />' +
-            '<span>' + moment(m.get('time_from')).tz('Europe/Prague').format('H:mm') + ' - ' + moment(m.get('time_to')).tz('Europe/Prague').format('H:mm') + '</span><br />' +
-            '<a class="btn btn-link btn-xs" href="#" id="movePlaceButton">upravit</a> ', {closeButton:false})
+            .bindPopup('<div class="containers-edit"><span>' + place.get('place_name') + '</span><br />' +
+            '<span>' + moment(m.get('time_from')).tz('Europe/Prague').format('H:mm') + ' - ' + moment(m.get('time_to')).tz('Europe/Prague').format('H:mm') + '</span>' +
+            '<a class="btn btn-link btn-xs movePlaceButton" href="#"><span class="glyphicon glyphicon-pencil"></span></a></div> ', {closeButton:false})
             .on('popupopen', updateMarkerBindings);
         });
         this.markerLayerGroup = L.layerGroup(markerArray).addTo(map);
@@ -201,11 +201,11 @@ define([
         }));
       },
       updateMarkerBindings:function () {
-        $('#movePlaceButton').click(this.movePlace);
+        $('.movePlaceButton').click(this.movePlace);
       },
       movePlace:function (evt) {
         // find related model
-        var model = appState.places.findWhere({place_name:$(evt.target).siblings().first().text()});
+        var model = appState.places.findWhere({place_name:$(evt.target).parent().siblings().first().text()});
         // show the localization marker on the map
         var view = new GeoLocatePlace({model:model}).render();
 
