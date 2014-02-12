@@ -117,10 +117,14 @@ define([
         return evt.preventDefault();
       },
       enableMenu:function () {
-        this.menuItem.removeClass('disabled');
+        if (this.menuItem) {
+          this.menuItem.removeClass('disabled');
+        }
       },
       disableMenu:function () {
-        this.menuItem.addClass('disabled');
+        if (this.menuItem) {
+          this.menuItem.addClass('disabled');
+        }
       },
       updateFilter:function (model) {
         this.filteredModel.reset(this.model.filter(function (m) {
