@@ -41,7 +41,7 @@ app.get('/', function (req, res, next)
   res.end(data.toString().replace(/host:port/g, req.header('Host')));
 });
 
-app.get(/\/(css|js|img)\/?.*/, restify.serveStatic({directory: './static/'}));
+app.get(/\/(css|js|img|test)\/?.*/, restify.serveStatic({directory: './static/'}));
 
 app.get('/status', function (req, res, next)
 {

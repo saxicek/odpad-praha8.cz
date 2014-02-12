@@ -11,7 +11,10 @@ define([
 
     // simplifies place name for geocoder to get better results
     locationAddress = function(place_name) {
-      return place_name + ', Praha 8';
+      return place_name
+        .split('x ', 1)[0]
+        .split('(', 1)[0]
+        .trim() + ', Praha 8';
     },
 
     // geocodes location
@@ -31,7 +34,8 @@ define([
     ;
 
   return {
-    geoLocate: geoLocate
+    geoLocate: geoLocate,
+    locationAddress: locationAddress
   };
 
 });
