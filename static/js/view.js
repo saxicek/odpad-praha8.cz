@@ -179,7 +179,7 @@ define([
         var markerArray = this.filteredModel.map(function (m) {
           var place = appState.places.get(m.get('place_id'));
           return L.marker({lat:place.get('lat'), lng:place.get('lng')})
-            .bindPopup('<div class="containers-edit"><span>' + place.get('place_name') + '</span><br />' +
+            .bindPopup('<div class="text-center containers-edit"><strong>' + place.get('place_name') + '</strong><br />' +
             '<span>' + moment(m.get('time_from')).tz('Europe/Prague').format('H:mm') + ' - ' + moment(m.get('time_to')).tz('Europe/Prague').format('H:mm') + '</span>' +
             '<a class="btn btn-link btn-xs movePlaceButton" href="#"><span class="glyphicon glyphicon-pencil"></span></a></div> ', {closeButton:false})
             .on('popupopen', updateMarkerBindings);
