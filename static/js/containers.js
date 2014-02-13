@@ -33,9 +33,10 @@ require([
   'view',
   'map',
   'app-state',
+  'config',
   'google-analytics-amd',
   'bootstrap'],
-  function($, view, map, appState, ga) {
+  function($, view, map, appState, config, ga) {
   var
 
     loadData = function() {
@@ -60,6 +61,9 @@ require([
       var v = new view.ContainerFilter({el: $('ul.container-filter'), model: appState.filterDate}).render();
 
       map.whenReady(loadData);
+
+      // append version info
+      $('#version').append('Verze: ' + config.version);
 
       // add listener on show help
       $('#aboutModal').on('show.bs.modal', function() {
