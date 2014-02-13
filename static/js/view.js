@@ -6,10 +6,11 @@ define([
   'map',
   'collection',
   'app-state',
+  'google-analytics-amd',
   'moment-timezone',
   'moment-timezone-data',
   'moment-lang-cs'
-], function ($, _, Backbone, geoUtil, map, collection, appState, moment) {
+], function ($, _, Backbone, geoUtil, map, collection, appState, ga, moment) {
 
   "use strict";
 
@@ -67,6 +68,9 @@ define([
           lng:this.marker.getLatLng().lng
         }, {wait:true});
         map.removeLayer(this.marker);
+
+        ga('send', 'event', 'place', 'located');
+
         vent.trigger('geoLocatePlace:placementFinished');
 
         return e.preventDefault();
@@ -74,6 +78,9 @@ define([
       // function is called whenever user cancels placement of unknown place
       unknownNotPlaced:function (e) {
         map.removeLayer(this.marker);
+
+        ga('send', 'event', 'place', 'not_located');
+
         vent.trigger('geoLocatePlace:placementCanceled');
 
         return e.preventDefault();
@@ -122,6 +129,8 @@ define([
         var model = this.model.findWhere({place_name:$(evt.target).text()});
         // show the localization marker on the map
         var view = new GeoLocatePlace({model:model}).render();
+
+        ga('send', 'event', 'unknown_place', 'locate');
 
         return evt.preventDefault();
       },
@@ -209,6 +218,8 @@ define([
         // show the localization marker on the map
         var view = new GeoLocatePlace({model:model}).render();
 
+        ga('send', 'event', 'place', 'change_location');
+
         return evt.preventDefault();
       }
     }),
@@ -294,6 +305,9 @@ define([
           if (!moment().isBefore(this.model.get('filter_date'), 'day')) {
             this.$('.container-filter-prev').addClass('disabled');
           }
+
+          ga('send', 'event', 'day', 'previous');
+
         }
 
         return e.preventDefault();
@@ -305,6 +319,9 @@ define([
             this.$('.container-filter-prev').removeClass('disabled');
           }
           this.model.set('filter_date', moment(this.model.get('filter_date')).add('days', 1));
+
+          ga('send', 'event', 'day', 'next');
+
         }
 
         return e.preventDefault();
