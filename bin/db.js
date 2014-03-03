@@ -114,7 +114,7 @@ function import_containers(containers) {
       stmt = "INSERT INTO container (place_id, time_from, time_to) VALUES ($1::integer, $2::timestamp AT TIME ZONE 'Europe/Prague', $3::timestamp AT TIME ZONE 'Europe/Prague');";
       pg(stmt, [rows[0].id, container.time_from, container.time_to], function(err, rows, result) {
         if(err) {
-          return console.error('Cannot insert container to DB!\n', err);
+          console.error('Cannot insert container to DB!\n', err);
         }
         import_containers(containers);
       });
