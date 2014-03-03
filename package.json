@@ -1,7 +1,7 @@
 {
   "name": "Odpad-Praha8",
   "description": "A simple mapping application for finding bulk waste containers in Prague 8",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "private": true,
   "engines": {
     "node": "0.10.x",
@@ -20,7 +20,9 @@
     "mocha": "*",
     "chai": "*",
     "jshint": "2.3.0",
-    "sinon": "1.7.3"
+    "sinon": "1.7.3",
+    "requirejs": "2.1.10",
+    "bower": "1.2.8"
   },
   "repository": {
     "type": "git",
@@ -28,9 +30,10 @@
   },
   "scripts": {
     "start": "node server.js",
-    "build": "npm run initdb",
+    "build-js": "bower install && r.js -o build-config.js",
     "initdb": "node bin/bootstrap.js",
-    "test": "make all"
+    "test": "make all",
+    "deploy": "npm run build-js && npm run initdb"
   },
   "main": "server.js"
 }

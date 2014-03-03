@@ -1,4 +1,4 @@
-# Map of waste container in Prague 8
+# Map of waste containers in Prague 8
 *powered by RESTify, PostGIS, and Leaflet maps*
 
 A basic mapping application using PostGIS, node-restify, LeafLet Maps and map tiles from several map providers, to visualize the locations of waste containers in Prague 8.
@@ -27,7 +27,13 @@ OpenShift will automatically resolve `package.json` dependencies for hosted appl
 
     npm install
 
-### port-forwarding for local access to your remote db
+### Installing client dependencies
+Project uses Bower for management of javascript library dependencies. You have to run `bower install` to download all required JS libraries. This step is required for further building of single JS script.
+
+### Creating single minimized javascript file for distribution
+RequireJS and its utility r.js builds single javascript file which is used by index.html. The file is build by `r.js.cmd -o build-config.js`. It creates file `static/js/containers-min.js`.
+
+### Port-forwarding for local access to your remote db
 You can set up your own postgreSQL database for local development.  But, OpenShift provides a great way to get connected to your fully hosted and configured PostgreSQL database in mere seconds.  
 
 The `rhc port-forward` command establishes a local connection to your hosted database, where your DB permissions, table schema, and map data have already been initialized.  

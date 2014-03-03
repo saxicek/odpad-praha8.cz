@@ -1,0 +1,27 @@
+{
+  "name": "odpad-praha8-cz",
+  "version": "1.1.0",
+  "homepage": "https://github.com/saxicek/odpad-praha8.cz",
+  "authors": [
+    "Libor Nenadál <libor.nenadal@gmail.com>"
+  ],
+  "description": "Map application of waste containers in Prague 8",
+  "license": "MIT",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "jquery": "1.x",
+    "bootstrap": "~3.1.1",
+    "backbone": "~1.1.1",
+    "moment-timezone": "~0.0.3",
+    "moment": "~2.5.1",
+    "requirejs": "~2.1.11",
+    "requirejs-plugins": "~1.0.2"
+  }
+}
