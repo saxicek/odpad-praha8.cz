@@ -30,7 +30,7 @@
   },
   "scripts": {
     "start": "node server.js",
-    "build-js": "bower install --config.directory=.bower/config && r.js -o build-config.js",
+    "build-js": "HOME=$HOME/app-root/runtime bower install && r.js -o build-config.js",
     "initdb": "node bin/bootstrap.js",
     "test": "make all",
     "deploy": "npm run build-js && npm run initdb"
