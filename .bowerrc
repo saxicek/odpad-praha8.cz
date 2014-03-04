@@ -5,7 +5,7 @@
         "completion": ".bower/data/completion",
         "registry": ".bower/cache/registry",
         "empty": ".bower/data/empty",
-        "cache": ".bower/cache"
+        "cache": ".bower/cache",
         "config": ".bower/config"
     }
 }
