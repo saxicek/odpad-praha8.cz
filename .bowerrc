@@ -4,6 +4,8 @@
         "links": ".bower/data/links",
         "completion": ".bower/data/completion",
         "registry": ".bower/cache/registry",
-        "empty": ".bower/data/empty"
+        "empty": ".bower/data/empty",
+        "cache": ".bower/cache"
+        "config": ".bower/config"
     }
 }
