@@ -2,7 +2,9 @@ var config      = require('config'),
     restify     = require('restify'),
     fs          = require('fs'),
     db          = require('./bin/db.js'),
-    scraper     = require('./bin/scraper.js');
+    scraper     = require('./bin/scraper.js'),
+    pjson       = require('./package.json'),
+    doT         = require('dot');
 
 var app         = restify.createServer();
 
@@ -10,6 +12,9 @@ app.use(restify.queryParser());
 app.use(restify.bodyParser());
 app.use(restify.CORS());
 app.use(restify.fullResponse());
+
+// evaluate index template
+var index = doT.template(fs.readFileSync(__dirname + '/index.html').toString())({version: pjson.version});
 
 // Routes
 app.get('/container', db.getContainers);
@@ -35,10 +40,9 @@ app.put('/place/:id', function (req, res, next) {
 
 app.get('/', function (req, res, next)
 {
-  var data = fs.readFileSync(__dirname + '/index.html');
   res.status(200);
   res.header('Content-Type', 'text/html');
-  res.end(data.toString().replace(/host:port/g, req.header('Host')));
+  res.end(index);
 });
 
 app.get(/\/(css|js|img|test)\/?.*/, restify.serveStatic({directory: './static/'}));

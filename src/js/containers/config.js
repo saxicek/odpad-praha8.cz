@@ -11,8 +11,7 @@ define(function () {
       maxLat: 50.158379,
       minLng: 14.386769,
       maxLng: 14.504686
-    },
-    version: '1.1.0'
+    }
   };
 
 });
