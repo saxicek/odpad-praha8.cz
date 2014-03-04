@@ -1,5 +1,9 @@
 {
-  "storage": {
-    "cache": "./.bower/cache"
-  }
+    "storage": {
+        "packages": ".bower/cache/packages",
+        "links": ".bower/data/links",
+        "completion": ".bower/data/completion",
+        "registry": ".bower/cache/registry",
+        "empty": ".bower/data/empty"
+    }
 }
