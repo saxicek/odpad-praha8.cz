@@ -1,3 +1,5 @@
 {
-  "storage": "./.bower"
+  "storage": {
+    "cache": "./.bower/cache"
+  }
 }
