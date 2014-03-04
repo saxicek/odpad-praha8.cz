@@ -110,11 +110,11 @@ When you're ready, you can push changes to your OpenShift-hosted application env
     `git push`
 
 ## License
-This code is dedicated to the public domain to the maximum extent permitted by applicable law, pursuant to CC0 (http://creativecommons.org/publicdomain/zero/1.0/)
+This code is licensed under the MIT License. (See LICENSE.txt)
 
 ## Acknowledgements
 
-This application makes use of or was inspired by the following open source projects:
+This application makes use of or was inspired by the following projects:
 
  - [BootLeaf](https://github.com/bmcbride/bootleaf)
  - [Leaflet](http://leafletjs.com/)
