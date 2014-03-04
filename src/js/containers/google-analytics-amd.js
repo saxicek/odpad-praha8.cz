@@ -17,7 +17,9 @@ define(function (require) {
   // Asynchronously load Google Analytics, letting it take over our `window.ga`
   // object after it loads. This allows us to add events to `window.ga` even
   // before the library has fully loaded.
-  require(["//www.google-analytics.com/analytics.js"]);
+  require(["//www.google-analytics.com/analytics.js"], null, function(err) {
+    // analytics script was probably blocked, no problem
+  });
 
   return module;
 
