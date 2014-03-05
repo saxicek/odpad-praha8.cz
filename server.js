@@ -17,6 +17,9 @@ app.use(restify.fullResponse());
 var index = doT.template(fs.readFileSync(__dirname + '/index.html').toString())({version: pjson.version});
 
 // Routes
+
+///--- API calls
+
 app.get('/container', db.getContainers);
 
 app.get('/container/update', function (req, res, next) {
@@ -38,6 +41,20 @@ app.put('/place/:id', function (req, res, next) {
   });
 });
 
+app.get('/status', function (req, res, next)
+{
+  res.send({status: 'ok'});
+});
+
+
+///--- Static content
+
+app.use(function(req, res, next) {
+  res.etag = pjson.version;
+  next();
+});
+app.use(restify.conditionalRequest());
+
 app.get('/', function (req, res, next)
 {
   res.status(200);
@@ -46,11 +63,6 @@ app.get('/', function (req, res, next)
 });
 
 app.get(/\/(css|js|img|test)\/?.*/, restify.serveStatic({directory: './static/'}));
-
-app.get('/status', function (req, res, next)
-{
-  res.send({status: 'ok'});
-});
 
 app.listen(config.port, config.ip, function () {
   console.info( "Listening on " + config.ip + ", port " + config.port )
