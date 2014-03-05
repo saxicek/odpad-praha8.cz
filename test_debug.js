@@ -3,7 +3,7 @@ var Mocha = require('mocha'),
   fs = require('fs');
 
 var mocha = new Mocha({
-  reporter: 'dot',
+  reporter: 'spec',
   ui: 'bdd',
   timeout: 999999
 });
@@ -22,15 +22,7 @@ fs.readdir(testDir, function (err, files) {
     }
   });
 
-  var runner = mocha.run(function () {
-    console.info('finished');
-  });
+  mocha.run();
 
-  runner.on('pass', function (test) {
-    console.info('... %s passed', test.title);
-  });
-
-  runner.on('fail', function (test) {
-    console.info('... %s failed', test.title);
-  });
 });
+
