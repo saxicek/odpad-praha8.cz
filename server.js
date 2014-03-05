@@ -49,7 +49,7 @@ app.get(/\/(css|js|img|test)\/?.*/, restify.serveStatic({directory: './static/'}
 
 app.get('/status', function (req, res, next)
 {
-  res.send("{status: 'ok'}");
+  res.send({status: 'ok'});
 });
 
 app.listen(config.port, config.ip, function () {
