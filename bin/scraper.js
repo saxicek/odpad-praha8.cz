@@ -46,7 +46,12 @@ function parse_containers(body) {
       raw_time = cells.eq(2).find('span').text();
     }
     var dates = util.parseDate(raw_date, raw_time);
-    containers[i] = {place_name: place_name, time_from: dates['time_from'], time_to: dates['time_to']};
+    containers[i] = {
+      place_name: place_name,
+      time_from: dates['time_from'],
+      time_to: dates['time_to'],
+      container_type: 'BIG_VOLUME_WASTE'
+    };
     console.info('Found place '+containers[i].place_name+' ('+containers[i].time_from+' - '+containers[i].time_to+')');
   });
 

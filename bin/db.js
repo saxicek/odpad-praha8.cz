@@ -27,8 +27,8 @@ function import_containers(containers) {
         return;
       }
       // insert container
-      stmt = "INSERT INTO container (place_id, time_from, time_to) VALUES ($1::integer, $2::timestamp AT TIME ZONE 'Europe/Prague', $3::timestamp AT TIME ZONE 'Europe/Prague');";
-      pg(stmt, [rows[0].id, container.time_from, container.time_to], function(err, rows, result) {
+      stmt = "INSERT INTO container (place_id, time_from, time_to, container_type) VALUES ($1::integer, $2::timestamp AT TIME ZONE 'Europe/Prague', $3::timestamp AT TIME ZONE 'Europe/Prague', $4::text);";
+      pg(stmt, [rows[0].id, container.time_from, container.time_to, container.container_type], function(err, rows, result) {
         if(err) {
           console.error('Cannot insert container to DB!\n', err);
         }
@@ -40,7 +40,7 @@ function import_containers(containers) {
 
 function get_containers(req, res, next){
   console.info('Selecting all containers');
-  pg("SELECT id, time_from, time_to, place_id FROM container WHERE time_to > NOW();", function(err, rows, result) {
+  pg("SELECT id, time_from, time_to, place_id, container_type FROM container WHERE time_to > NOW();", function(err, rows, result) {
     if(err) {
       console.error('Error running get_containers query\n', err);
       return next(err);
