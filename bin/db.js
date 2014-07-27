@@ -5,90 +5,6 @@ var pg_config   = config.pg_config,
     schema_name = config.schema_name;
 pg.connectionParameters = pg_config + '/' + schema_name;
 
-var error_response = "Schema already exists - bypassing db initialization step\n";
-
-function init_db(){
-  pg('CREATE EXTENSION postgis;', create_db_schema);
-}
-
-function create_db_schema(err, rows, result) {
-  if(err && err.code == "ECONNREFUSED"){
-    console.error("DB connection unavailable, see README notes for setup assistance\n", err);
-    return;
-  }
-  //drop_db_schema();
-  create_place_table();
-}
-
-function drop_db_schema(err, rows, result) {
-  // drop tables first
-  // errors in this part are ignored - tables may and may not be present so DROP can fail
-  console.info('Dropping table container');
-  pg('DROP TABLE container;', function(err, rows, result){
-    console.info('Dropping table place');
-    pg('DROP TABLE place;', function(err, rows, result) {
-      create_place_table();
-    });
-  });
-}
-
-function create_place_table(err, rows, result) {
-  if(err) {
-    console.error(error_response, err);
-    return;
-  }
-  var table_name = 'place';
-  var query = "CREATE TABLE "+table_name+" ( " +
-    "id serial NOT NULL," +
-    "place_name character varying(240), " +
-    "the_geom geometry, " +
-    "CONSTRAINT "+table_name+"_pkey PRIMARY KEY (id), " +
-    "CONSTRAINT "+table_name+"_enforce_dims_geom CHECK (st_ndims(the_geom) = 2), " +
-    "CONSTRAINT "+table_name+"_enforce_geotype_geom CHECK (geometrytype(the_geom) = 'POINT'::text OR the_geom IS NULL), " +
-    "CONSTRAINT "+table_name+"_enforce_srid_geom CHECK (st_srid(the_geom) = 4326), " +
-    "UNIQUE (place_name)" +
-    ") WITH ( OIDS=FALSE );";
-  console.info('Creating table '+table_name);
-  error_response = 'Cannot create table ' + table_name + '!\n';
-  pg(query, add_spatial_index);
-}
-
-function add_spatial_index(err, rows, result) {
-  if(err) {
-    console.error(error_response, err);
-    return;
-  }
-  var table_name = 'place';
-  console.info('Creating spatial index on table ' + table_name);
-  error_response = 'Cannot create spatial index on table ' + table_name + '!\n';
-  pg("CREATE INDEX "+table_name+"_geom_gist ON "+table_name+" USING gist (the_geom);", create_container_table);
-}
-
-function create_container_table(err, rows, result) {
-  if(err) {
-    console.error(error_response, err);
-    return;
-  }
-  var table_name = 'container';
-  var query = "CREATE TABLE "+table_name+" ( " +
-    "id serial NOT NULL," +
-    "time_from TIMESTAMP WITH TIME ZONE NOT NULL, " +
-    "time_to TIMESTAMP WITH TIME ZONE NOT NULL, " +
-    "place_id INTEGER REFERENCES place (id), " +
-    "CONSTRAINT "+table_name+ "_pkey PRIMARY KEY (id), " +
-    "UNIQUE (place_id, time_from, time_to)" +
-    ") WITH ( OIDS=FALSE );";
-  console.info('Creating table '+table_name);
-  error_response = 'Cannot create table ' + table_name + '!\n';
-  pg(query, function(err, rows, result) {
-    if(err) {
-      console.error(error_response, err);
-      return;
-    }
-    console.info('Database initialized!');
-  });
-}
-
 function import_containers(containers) {
   var stmt = null;
   var container = containers.shift();
@@ -160,8 +76,8 @@ function locate_place(id, lat, lng, callback) {
 }
 
 module.exports = exports = {
+  pg:                pg,
   getContainers:     get_containers,
-  initDB:            init_db,
   importContainers:  import_containers,
   getPlaces:         get_places,
   locatePlace:       locate_place

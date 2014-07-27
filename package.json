@@ -15,7 +15,8 @@
     "pg": "~2.8.3",
     "request": "2.24.x",
     "cheerio": "0.12.4",
-    "dot": "1.0.2"
+    "dot": "1.0.2",
+    "migrate": "0.1.4"
   },
   "devDependencies": {
     "mocha": "*",
@@ -32,7 +33,7 @@
   "scripts": {
     "start": "node server.js",
     "build-js": "HOME=$HOME/app-root/runtime bower install && r.js -o build-config.js",
-    "initdb": "node bin/bootstrap.js",
+    "initdb": "migrate up",
     "test": "make all",
     "deploy": "npm run build-js && npm run initdb"
   },
