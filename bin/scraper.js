@@ -50,7 +50,7 @@ function parse_containers(body) {
       place_name: place_name,
       time_from: dates['time_from'],
       time_to: dates['time_to'],
-      container_type: 'BIG_VOLUME_WASTE'
+      container_type: 'BULK_WASTE'
     };
     console.info('Found place '+containers[i].place_name+' ('+containers[i].time_from+' - '+containers[i].time_to+')');
   });
