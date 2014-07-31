@@ -15,6 +15,7 @@ require.config({
     'gmaps': 'containers/gmaps',
     'config': 'containers/config',
     'map': 'containers/map',
+    'map-layer': 'containers/map-layer',
     'leaflet-google': 'containers/leaflet-google',
     'collection': 'containers/collection',
     'model': 'containers/model',

@@ -6,11 +6,12 @@ define([
   'map',
   'collection',
   'app-state',
+  'map-layer',
   'google-analytics-amd',
   'moment-timezone',
   'moment-timezone-data',
   'moment-lang-cs'
-], function ($, _, Backbone, geoUtil, map, collection, appState, ga, moment) {
+], function ($, _, Backbone, geoUtil, map, collection, appState, mapLayer, ga, moment) {
 
   "use strict";
 
@@ -167,7 +168,7 @@ define([
         appState.filterDate.on('change', this.updateFilter);
         appState.places.on('change', this.updateFilter);
 
-        this.markerLayerGroup = null;
+        this.markerLayers = {};
       },
       render:function () {
         $("#loading").hide();
@@ -176,15 +177,37 @@ define([
 
         //add the new pins
         var updateMarkerBindings = this.updateMarkerBindings;
-        var markerArray = this.filteredModel.map(function (m) {
-          var place = appState.places.get(m.get('place_id'));
-          return L.marker({lat:place.get('lat'), lng:place.get('lng')})
+        var typeMap = {
+          "BIO_WASTE": 'Bioodpad',
+          "ELECTRO_WASTE": 'Elektroodpad',
+          "HAZARDOUS_WASTE": 'Nebezpečný odpad',
+          "TEXTILE": 'Textil',
+          "BULK_WASTE": 'Velkoobjemový odpad',
+          "WASTE_COLLECTION_YARD": 'Sběrný dvůr'
+        };
+        var markerLayers = this.markerLayers;
+        // transform collection to list of layers for each container type;
+        // it is the same structure which can be used to initialize new map
+        // with overlays - http://leafletjs.com/reference.html#control-layers
+        this.filteredModel.each(function(m) {
+          var
+            label = typeMap[m.get('container_type')] || m.get('container_type'),
+            place = appState.places.get(m.get('place_id')),
+            marker;
+          if (!(label in markerLayers)) {
+            // create new layer
+            markerLayers[label] = L.layerGroup();
+            // and add it to the map and layer control
+            map.addLayer(markerLayers[label]);
+            mapLayer.control.addOverlay(markerLayers[label], label);
+          }
+          marker = L.marker({lat:place.get('lat'), lng:place.get('lng')})
             .bindPopup('<div class="text-center containers-edit"><strong>' + place.get('place_name') + '</strong><br />' +
             '<span>' + moment(m.get('time_from')).tz('Europe/Prague').format('H:mm') + ' - ' + moment(m.get('time_to')).tz('Europe/Prague').format('H:mm') + '</span>' +
             '<a class="btn btn-link btn-xs movePlaceButton" href="#"><span class="glyphicon glyphicon-pencil"></span></a></div> ', {closeButton:false})
             .on('popupopen', updateMarkerBindings);
+          markerLayers[label].addLayer(marker);
         });
-        this.markerLayerGroup = L.layerGroup(markerArray).addTo(map);
 
         return this;
       },
@@ -192,11 +215,9 @@ define([
         $('#loading').show();
       },
       removeMarkers:function () {
-        if (this.markerLayerGroup) {
-          //clear the current pins
-          map.removeLayer(this.markerLayerGroup);
-          this.markerLayerGroup = null;
-        }
+        _.each(this.markerLayers, function(layer) {
+          layer.clearLayers();
+        });
       },
       // updates collection of shown models by filtering date and location
       updateFilter:function () {

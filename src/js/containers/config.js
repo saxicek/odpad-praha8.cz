@@ -11,7 +11,9 @@ define(function () {
       maxLat: 50.158379,
       minLng: 14.386769,
       maxLng: 14.504686
-    }
+    },
+    // big screen detection
+    bigScreen: (document.body.clientWidth > 767)
   };
 
 });
