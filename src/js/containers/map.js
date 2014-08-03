@@ -25,9 +25,6 @@ define([
 
   map.addControl(mapLayer.control);
 
-  // fix marker icon address
-  L.Icon.Default.imagePath = '/img/leaflet';
-
   return map;
 
 });

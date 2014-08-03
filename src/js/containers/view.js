@@ -8,10 +8,12 @@ define([
   'app-state',
   'map-layer',
   'google-analytics-amd',
+  'config',
   'moment-timezone',
   'moment-timezone-data',
-  'moment-lang-cs'
-], function ($, _, Backbone, geoUtil, map, collection, appState, mapLayer, ga, moment) {
+  'moment-lang-cs',
+  'leaflet.awesome-markers'
+], function ($, _, Backbone, geoUtil, map, collection, appState, mapLayer, ga, config, moment) {
 
   "use strict";
 
@@ -171,29 +173,34 @@ define([
         this.markerLayers = {};
       },
       render:function () {
+        var
+          updateMarkerBindings = this.updateMarkerBindings,
+          markerLayers = this.markerLayers
+        ;
+
         $("#loading").hide();
 
         this.removeMarkers();
 
         //add the new pins
-        var updateMarkerBindings = this.updateMarkerBindings;
-        var typeMap = {
-          "BIO_WASTE": 'Bioodpad',
-          "ELECTRO_WASTE": 'Elektroodpad',
-          "HAZARDOUS_WASTE": 'Nebezpečný odpad',
-          "TEXTILE": 'Textil',
-          "BULK_WASTE": 'Velkoobjemový odpad',
-          "WASTE_COLLECTION_YARD": 'Sběrný dvůr'
-        };
-        var markerLayers = this.markerLayers;
         // transform collection to list of layers for each container type;
         // it is the same structure which can be used to initialize new map
         // with overlays - http://leafletjs.com/reference.html#control-layers
         this.filteredModel.each(function(m) {
           var
-            label = typeMap[m.get('container_type')] || m.get('container_type'),
             place = appState.places.get(m.get('place_id')),
-            marker;
+            marker,
+            label,
+            icon;
+          // check that we have configuration for given container type
+          if (config.containerTypes[m.get('container_type')]) {
+            label = config.containerTypes[m.get('container_type')].label;
+            icon = L.AwesomeMarkers.icon(config.containerTypes[m.get('container_type')].icon);
+          } else {
+            label = config.containerTypes['__DEFAULT__'].label;
+            icon = L.AwesomeMarkers.icon(config.containerTypes['__DEFAULT__'].icon);
+          }
+
           if (!(label in markerLayers)) {
             // create new layer
             markerLayers[label] = L.layerGroup();
@@ -201,7 +208,7 @@ define([
             map.addLayer(markerLayers[label]);
             mapLayer.control.addOverlay(markerLayers[label], label);
           }
-          marker = L.marker({lat:place.get('lat'), lng:place.get('lng')})
+          marker = L.marker({lat:place.get('lat'), lng:place.get('lng')}, {icon: icon})
             .bindPopup('<div class="text-center containers-edit"><strong>' + place.get('place_name') + '</strong><br />' +
             '<span>' + moment(m.get('time_from')).tz('Europe/Prague').format('H:mm') + ' - ' + moment(m.get('time_to')).tz('Europe/Prague').format('H:mm') + '</span>' +
             '<a class="btn btn-link btn-xs movePlaceButton" href="#"><span class="glyphicon glyphicon-pencil"></span></a></div> ', {closeButton:false})
