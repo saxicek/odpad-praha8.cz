@@ -370,15 +370,40 @@ define([
         this.$('.container-filter-prev').addClass('disabled');
         this.$('.container-filter-next').addClass('disabled');
       }
+    }),
+
+    // view shows container types and their related markers in help dialog
+    ContainerTypeLegend = Backbone.View.extend({
+      initialize:function () {
+        _.bindAll(this, 'render');
+        this.tpl = _.template($('#legendItemTemplate').html());
+      },
+      render:function () {
+        var
+          el = this.$el,
+          tpl = this.tpl;
+        _.each(config.containerTypes, function(containerType, type) {
+          var
+            icon = $(L.AwesomeMarkers.icon(containerType.icon).createIcon())
+              .removeAttr('style')
+              .css('position', 'relative'),
+            item = $(tpl({type: type, label: containerType.label, allowed: containerType.allowed, forbidden: containerType.forbidden}))
+          ;
+          item.find('.icon-marker').append(icon);
+          el.append(item);
+        });
+      }
     })
-  ;
+
+    ;
 
 
   return {
     GeoLocatePlace: GeoLocatePlace,
     UnknownPlaces: UnknownPlaces,
     Containers: Containers,
-    ContainerFilter: ContainerFilter
+    ContainerFilter: ContainerFilter,
+    ContainerTypeLegend: ContainerTypeLegend
   };
 
 });

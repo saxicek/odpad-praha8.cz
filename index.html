@@ -167,18 +167,23 @@
 
             <div class="modal-body">
                 <ul id="aboutTabs" class="nav nav-tabs">
-                    <li class="active"><a href="#what" data-toggle="tab"><i class="fa fa-check-square-o"></i>&nbsp;&nbsp;Co</a></li>
+                    <li class="active"><a href="#legend" data-toggle="tab"><i class="glyphicon glyphicon-eye-open"></i>&nbsp;&nbsp;Legenda</a></li>
+                    <li><a href="#what" data-toggle="tab"><i class="fa fa-check-square-o"></i>&nbsp;&nbsp;Co</a></li>
                     <li><a href="#who" data-toggle="tab"><i class="fa fa-user"></i>&nbsp;&nbsp;Kdo</a></li>
                     <li><a href="#why" data-toggle="tab"><i class="fa fa-question-circle"></i>&nbsp;&nbsp;Proč</a></li>
                     <li><a href="#how" data-toggle="tab"><i class="fa fa-wrench"></i>&nbsp;&nbsp;Jak</a></li>
                 </ul>
                 <div id="aboutTabsContent" class="tab-content" style="padding-top: 10px;">
-                    <div class="tab-pane fade active in" id="what">
-                        <p>Hlavním účelem aplikace je zobrazovat mapu kontejnerů velkoobjemového odpadu v Praze 8 v určitý den. Dále umožňuje tyto akce:</p>
+                    <div class="tab-pane fade active in" id="legend">
+                        <div class="panel-group" id="legendItems"></div>
+                    </div>
+                    <div class="tab-pane fade in" id="what">
+                        <p>Hlavním účelem aplikace je zobrazovat mapu různých typů kontejnerů na odpad v Praze 8 v určitý den. Dále umožňuje tyto akce:</p>
                         <table class="table">
                             <tr><td>
                                 <ul>
                                     <li>Výběr mapového podkladu.</li>
+                                    <li>Výběr typů kontejnerů, které se mají zobrazit.</li>
                                     <li>Nastavit umístění kontejneru pro místa, která aplikace nezná.</li>
                                     <li>Upravit umístění kontejneru.</li>
                                 </ul>
@@ -193,9 +198,9 @@
                         </dl>
                     </div>
                     <div class="tab-pane fade in" id="why">
-                        <p>Neznám Prahu 8 natolik dobře, abych si uměl vybrat ze seznamu zveřejňovaném na
-                            <a href="http://www.praha8.cz/Velkoobjemove-kontejnery">http://www.praha8.cz/Velkoobjemove-kontejnery</a>
-                            ten kontejner, který je poblíž mého bydliště a to dnes, zítra, ... Tak jsem data vizualizoval.</p>
+                        <p>Neznám Prahu natolik dobře, abych si uměl vybrat kontejner na odpad pouze podle jména ulice
+                            (typické pro stránky Prahy, například <a href="http://www.praha8.cz/Odpady.html">http://www.praha8.cz/Odpady.html</a>).
+                            A navíc aby kontejner byl poblíž mého bydliště; ideálně dnes nebo zítra, ... Tak jsem data vizualizoval.</p>
                     </div>
                     <div class="tab-pane fade in" id="how">
                         <p>Hlavní použité technologie jsou Node.js, Bootstrap, Leaflet.js, Postgresql, OpenShift. Projekt je
@@ -208,6 +213,32 @@
     </div><!-- /.modal-dialog -->
 </div><!-- /.modal -->
 
+<script type="text/template" id="legendItemTemplate">
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h4 class="panel-title">
+                <a data-toggle="collapse" data-parent="#legendItems" href="#<% if (allowed || forbidden) print('LEGEND_'+type); %>">
+                    <div class="row">
+                        <div class="col-xs-1 icon-marker"></div>
+                        <div class="col-xs-11 legend-label"><%= label %></div>
+                    </div>
+                </a>
+            </h4>
+        </div>
+        <div id="LEGEND_<%= type %>" class="panel-collapse collapse">
+            <table class="table">
+                <tr>
+                    <th><% if (allowed) print('Vhodné'); %></th>
+                    <th><% if (forbidden) print('Nevhodné'); %></th>
+                </tr>
+                <tr>
+                    <td><%= allowed %></td>
+                    <td><%= forbidden %></td>
+                </tr>
+            </table>
+        </div>
+    </div>
+</script>
 <script type="text/javascript" src="js/containers.js"></script>
 
 </body>

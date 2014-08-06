@@ -30,3 +30,8 @@
 .containers-edit:hover > a.movePlaceButton {
     visibility: visible;
 }
+
+/* Help dialog - legend label position */
+.legend-label {
+    padding-top: 14px;
+}

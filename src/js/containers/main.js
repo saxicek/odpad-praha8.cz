@@ -29,6 +29,9 @@ define([
         // create view for day filtering
         var v = new view.ContainerFilter({el: $('ul.container-filter'), model: appState.filterDate}).render();
 
+        // generate container types legend in help dialog
+        var legend = new view.ContainerTypeLegend({el: $('#legendItems')}).render();
+
         map.whenReady(loadData);
 
         // add listener on show help
