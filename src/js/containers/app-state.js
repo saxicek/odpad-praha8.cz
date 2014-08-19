@@ -1,10 +1,14 @@
 define([
   'backbone',
   'moment-timezone',
-  'collection'
+  'collection',
+  'moment-locale-cs'
 ], function (Backbone, moment, collection) {
 
   "use strict";
+
+  // Use CS locale in Moment.js
+  moment.locale('cs');
 
   var
     filterDate = new Backbone.Model({'filter_date': moment(0, 'HH')}),

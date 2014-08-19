@@ -7,7 +7,7 @@ require.config({
     'underscore': '../../bower_components/underscore/underscore',
     'backbone': '../../bower_components/backbone/backbone',
     'moment': '../../bower_components/moment/moment',
-    'moment-lang-cs': '../../bower_components/moment/lang/cs',
+    'moment-locale-cs': '../../bower_components/moment/locale/cs',
     'moment-timezone': '../../bower_components/moment-timezone/moment-timezone',
     'bootstrap': '//netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap',
 

@@ -11,7 +11,6 @@ define([
   'config',
   'moment-timezone',
   'moment-timezone-data',
-  'moment-lang-cs',
   'leaflet.awesome-markers'
 ], function ($, _, Backbone, geoUtil, map, collection, appState, mapLayer, ga, config, moment) {
 
@@ -275,8 +274,8 @@ define([
         vent.on('geoLocatePlace:placementFinished', this.enableFilter);
 
         // customize moment.js to show days only (not time) in calendar()
-        moment.lang('cs', {
-          'calendar':{
+        moment.locale('cs', {
+          calendar:{
             sameDay:"[dnes]",
             nextDay:'[zítra]',
             nextWeek:function () {
