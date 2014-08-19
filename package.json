@@ -32,10 +32,9 @@
   },
   "scripts": {
     "start": "node server.js",
-    "build-js": "HOME=$HOME/app-root/runtime bower install && r.js -o build-config.js",
-    "initdb": "migrate up",
-    "test": "make all",
-    "deploy": "npm run build-js && npm run initdb"
+    "build": "HOME=$HOME/app-root/runtime bower install && r.js -o build-config.js",
+    "deploy": "migrate up",
+    "test": "make all"
   },
   "main": "server.js"
 }
