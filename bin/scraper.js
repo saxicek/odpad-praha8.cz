@@ -4,6 +4,7 @@ var
   fs           = require('fs'),
   path         = require('path'),
   util         = require('util'),
+  async        = require('async'),
   EventEmitter = require('events').EventEmitter,
   db           = require('./db.js'),
 
@@ -14,27 +15,66 @@ var scraperPrototype = {
   scrape: function() {
     var
       self = this,
-      containers;
+      containers,
+      scrapeId;
 
-    // fetch the html page
-    this.info('Fetching the page '+this.url);
-    request.get(this.url, function (err, response, body) {
+    async.waterfall([
+      // add scrape_status record to DB
+      function(callback) {
+        db.addScrape(self.name, callback);
+      },
+      // get id of scrape_status record
+      function(rows, result, callback) {
+        scrapeId = rows[0].id;
+        callback();
+      },
+      // fetch scraper URL
+      function(callback) {
+        self.info('Fetching the page ' + self.url);
+        request.get(self.url, callback);
+      },
+      // check response status code
+      function(response, body, callback) {
+        if (response.statusCode != 200) {
+          return callback(new Error('Invalid response code ('+response.statusCode+')'));
+        }
+        callback(null, body);
+      },
+      // parse data
+      self.parse.bind(self),
+      // import data to DB
+      db.importContainers
+    ],
+    function(err, result) {
       if (err) {
-        return self.error("Error in fetching URL\n" + err);
+        // log error to console
+        self.error('Scraper error!', err);
+      } else {
+        self.info(result);
       }
-      if (response.statusCode != 200) {
-        return self.error('Invalid response code ('+response.statusCode+')');
+      // update scrape status in DB
+      if (scrapeId) {
+        if (err) {
+          db.scrapeError(scrapeId, err, function(err) {
+            if (err) self.error('Cannot update scraper status to error', err);
+          });
+        } else {
+          db.scrapeSuccess(scrapeId, function(err) {
+            if (err) self.error('Cannot update scraper status to error', err);
+          });
+        }
       }
-
-      containers = self.parse(body);
-      db.importContainers(containers);
     });
   },
   info: function(message) {
-    console.log(this.name + ': ' + message);
+    if (message) {
+      console.log(this.name + ': ' + message);
+    }
   },
-  error: function(message) {
-    console.error(this.name + ': ' + message);
+  error: function(message, err) {
+    if (message) {
+      console.error(this.name + ': ' + message, err);
+    }
   }
 };
 

@@ -7,7 +7,7 @@ var
 
 scraper.url = 'http://www.praha8.cz/Velkoobjemove-kontejnery';
 
-scraper.parse = function(body) {
+scraper.parse = function(body, callback) {
   this.info('Loading the page');
 
   // parse html page
@@ -39,7 +39,8 @@ scraper.parse = function(body) {
     console.info('Found place '+containers[i].place_name+' ('+containers[i].time_from+' - '+containers[i].time_to+')');
   });
 
-  return containers;
+  // callback first argument is null - no error was raised
+  callback(null, containers);
 };
 
 module.exports = exports = scraper;

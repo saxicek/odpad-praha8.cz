@@ -16,7 +16,7 @@
     "request": "2.24.x",
     "cheerio": "0.12.4",
     "dot": "1.0.2",
-    "migrate": "0.1.4"
+    "async": "~0.9.0"
   },
   "devDependencies": {
     "mocha": "*",
@@ -24,7 +24,8 @@
     "jshint": "2.3.0",
     "sinon": "1.7.3",
     "requirejs": "2.1.10",
-    "bower": "1.2.8"
+    "bower": "1.2.8",
+    "migrate": "0.1.4"
   },
   "repository": {
     "type": "git",
