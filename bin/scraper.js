@@ -1,64 +1,77 @@
-var config      = require('config'),
-    request     = require('request'),
-    cheerio     = require('cheerio'),
-    db          = require('./db.js'),
-    util        = require('./util.js');
+var
+  config       = require('config'),
+  request      = require('request'),
+  fs           = require('fs'),
+  path         = require('path'),
+  util         = require('util'),
+  EventEmitter = require('events').EventEmitter,
+  db           = require('./db.js'),
 
-function scrape_containers() {
-  var url = config.scrape_url,
-    containers;
+  emitter      = new EventEmitter()
+  ;
 
-  // fetch the html page
-  console.info('Fetching the page '+url);
-  request.get(url, function (err, response, body) {
-    if (err) {
-      return console.error("Error in fetching URL\n", err);
-    }
-    if (response.statusCode != 200) {
-      return console.error('Invalid response code ('+response.statusCode+')');
-    }
+var scraperPrototype = {
+  scrape: function() {
+    var
+      self = this,
+      containers;
 
-    containers = parse_containers(body);
-    db.importContainers(containers);
+    // fetch the html page
+    this.info('Fetching the page '+this.url);
+    request.get(this.url, function (err, response, body) {
+      if (err) {
+        return self.error("Error in fetching URL\n" + err);
+      }
+      if (response.statusCode != 200) {
+        return self.error('Invalid response code ('+response.statusCode+')');
+      }
+
+      containers = self.parse(body);
+      db.importContainers(containers);
+    });
+  },
+  info: function(message) {
+    console.log(this.name + ': ' + message);
+  },
+  error: function(message) {
+    console.error(this.name + ': ' + message);
+  }
+};
+
+function createScraper(name) {
+  var self = Object.create(scraperPrototype);
+  self.name = name;
+  emitter.on('scrape', function() {
+    // bind scope to Scraper object
+    self.scrape.apply(self);
   });
+  self.info('Scraper enabled');
+  return self;
 }
 
-function parse_containers(body) {
-  console.info('Loading the page');
+function scrape() {
+  emitter.emit('scrape');
+}
 
-  // parse html page
-  var containers = [],
-    $ = cheerio.load(body);
-
-  $('table.mcp8').find('tr:not(.mcp8TableHeaderRow)').each(function(i, elem) {
-    // skip header
-    var cells = $(this).find('td');
-    var place_name = cells.eq(0).find('span').text().replace(/'/g,"''");
-
-    var raw_date,
-      raw_time;
-    // check if there is a column with number of containers
-    if (cells.eq(1).find('span').text().match(/^\d+$/)) {
-      raw_date = cells.eq(2).find('span').text();
-      raw_time = cells.eq(3).find('span').text();
-    } else {
-      raw_date = cells.eq(1).find('span').text();
-      raw_time = cells.eq(2).find('span').text();
+function init() {
+  // load scrapers
+  fs.readdir(path.join(__dirname, 'scrapers'), function(err, files) {
+    if (err) {
+      return console.error('Cannot load scrapers: ' + err);
     }
-    var dates = util.parseDate(raw_date, raw_time);
-    containers[i] = {
-      place_name: place_name,
-      time_from: dates['time_from'],
-      time_to: dates['time_to'],
-      container_type: 'BULK_WASTE'
-    };
-    console.info('Found place '+containers[i].place_name+' ('+containers[i].time_from+' - '+containers[i].time_to+')');
+    for (var i = 0; i < files.length; i++) {
+      // this registers scraper to scrape event
+      require('./scrapers/' + files[i]);
+    }
   });
-
-  return containers;
+  // perform initial scrape
+  setTimeout(scrape, 3000);
+  // schedule future scrapes
+  setInterval(scrape, config.scrape_interval);
 }
 
 module.exports = exports = {
-  scrapeContainers: scrape_containers,
-  parseContainers: parse_containers
+  scrape: scrape,
+  init: init,
+  createScraper: createScraper
 };

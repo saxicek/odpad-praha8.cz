@@ -8,11 +8,11 @@ A basic mapping application using PostGIS, node-restify, LeafLet Maps and map ti
 ## Instant Provisioning on OpenShift
 To deploy a clone of this application using the [`rhc` command line tool](http://rubygems.org/gems/rhc), type:
 
-    rhc app create containers nodejs-0.10 postgresql-9.2 cron-1.4 --from-code=https://github.com/saxicek/odpad-praha8.cz.git
+    rhc app create containers nodejs-0.10 postgresql-9.2 --from-code=https://github.com/saxicek/odpad-praha8.cz.git
     
-Or, [link to a web-based **clone+deploy**](https://openshift.redhat.com/app/console/application_type/custom?name=containers&cartridges%5B%5D=nodejs-0.10&cartridges%5B%5D=postgresql-9.2&cartridges%5B%5D=cron-1.4&initial_git_url=https%3A%2F%2Fgithub.com%2Fsaxicek%2Fodpad-praha8.cz.git) on [OpenShift Online](http://OpenShift.com) or [your own open cloud](http://openshift.github.io):
+Or, [link to a web-based **clone+deploy**](https://openshift.redhat.com/app/console/application_type/custom?name=containers&cartridges%5B%5D=nodejs-0.10&cartridges%5B%5D=postgresql-9.2&initial_git_url=https%3A%2F%2Fgithub.com%2Fsaxicek%2Fodpad-praha8.cz.git) on [OpenShift Online](http://OpenShift.com) or [your own open cloud](http://openshift.github.io):
 
-    https://openshift.redhat.com/app/console/application_type/custom?name=containers&cartridges%5B%5D=nodejs-0.10&cartridges%5B%5D=postgresql-9.2&cartridges%5B%5D=cron-1.4&initial_git_url=https%3A%2F%2Fgithub.com%2Fsaxicek%2Fodpad-praha8.cz.git
+    https://openshift.redhat.com/app/console/application_type/custom?name=containers&cartridges%5B%5D=nodejs-0.10&cartridges%5B%5D=postgresql-9.2&initial_git_url=https%3A%2F%2Fgithub.com%2Fsaxicek%2Fodpad-praha8.cz.git
 
 A live demo is available at: [http://odpad-praha8.rhcloud.com/](http://odpad-praha8.rhcloud.com/)
 

@@ -3,5 +3,5 @@ module.exports = {
   ip: process.env.OPENSHIFT_NODEJS_IP || '127.0.0.1',
   pg_config: process.env.OPENSHIFT_POSTGRESQL_DB_URL || 'postgresql://127.0.0.1:5432',
   schema_name: process.env.OPENSHIFT_APP_NAME || process.env.PG_MAP_TABLE_NAME || 'odpad',
-  scrape_url: 'http://www.praha8.cz/Velkoobjemove-kontejnery'
+  scrape_interval: 24 * 60 * 60 * 1000 // daily (in milliseconds)
 }

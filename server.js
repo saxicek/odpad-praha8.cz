@@ -15,6 +15,8 @@ app.use(restify.fullResponse());
 
 // evaluate index template
 var index = doT.template(fs.readFileSync(__dirname + '/index.html').toString())({version: pjson.version});
+// load all scrapers
+scraper.init();
 
 // Routes
 
@@ -23,8 +25,8 @@ var index = doT.template(fs.readFileSync(__dirname + '/index.html').toString())(
 app.get('/container', db.getContainers);
 
 app.get('/container/update', function (req, res, next) {
-  // fetch page, parse it and store to DB
-  scraper.scrapeContainers();
+  // forcibly run scraper update
+  scraper.scrape();
   res.send({status: 'ok'});
 });
 
