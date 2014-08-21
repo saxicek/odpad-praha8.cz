@@ -11,7 +11,7 @@
     "config": "0.4.x",
     "requireindex": "1.0.x",
     "restify": "2.5.x",
-    "pg-query": "~0.7.0",
+    "pg-query": "~0.10.0",
     "pg": "~2.8.3",
     "request": "2.24.x",
     "cheerio": "0.12.4",

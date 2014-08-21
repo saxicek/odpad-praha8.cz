@@ -10,35 +10,23 @@ var scrape_status = {
   ERROR: 'ERR'
 };
 
-function import_containers(containers, callback) {
-  var stmt = null;
-  var container = containers.shift();
-  if (!container) {
-    return callback(null, 'Import finished!');
-  }
-  console.info('Importing container ' + container.place_name + ' to DB');
-  // check if place is in the database and get it's id
-  stmt = 'INSERT INTO place (place_name) VALUES ($1::text);';
-  pg(stmt, [container.place_name], function(err, rows, result) {
-    if (err) {
-      // place with the same name already exists
-      console.info('Place with name "' + container.place_name + '" already exists?\n', err)
-    }
-    stmt = 'SELECT id FROM place WHERE place_name = $1::text;';
-    pg(stmt, [container.place_name], function(err, rows, result) {
-      if (err) {
-        return callback(err);
-      }
-      // insert container
-      stmt = "INSERT INTO container (place_id, time_from, time_to, container_type) VALUES ($1::integer, $2::timestamp AT TIME ZONE 'Europe/Prague', $3::timestamp AT TIME ZONE 'Europe/Prague', $4::text);";
-      pg(stmt, [rows[0].id, container.time_from, container.time_to, container.container_type], function(err, rows, result) {
-        if(err) {
-          console.error('Cannot insert container to DB!\n', err);
-        }
-        import_containers(containers, callback);
-      });
-    });
-  });
+function find_place(place_name, callback) {
+  pg.first('SELECT id FROM place WHERE place_name = $1::text;', place_name, callback);
+}
+
+function insert_place(place_name, callback) {
+  var stmt = 'INSERT INTO place (place_name) VALUES ($1::text);';
+  pg(stmt, [place_name], callback);
+}
+
+function find_container(place_id, time_from, time_to, container_type, callback) {
+  var stmt = "SELECT id FROM container WHERE place_id = $1::integer AND time_from = $2::timestamp AT TIME ZONE 'Europe/Prague' AND time_to = $3::timestamp AT TIME ZONE 'Europe/Prague' AND container_type = $4::text;";
+  pg.first(stmt, [place_id, time_from, time_to, container_type], callback);
+}
+
+function insert_container(place_id, time_from, time_to, container_type, callback) {
+  var stmt = "INSERT INTO container (place_id, time_from, time_to, container_type) VALUES ($1::integer, $2::timestamp AT TIME ZONE 'Europe/Prague', $3::timestamp AT TIME ZONE 'Europe/Prague', $4::text);";
+  pg(stmt, [place_id, time_from, time_to, container_type], callback)
 }
 
 function get_containers(req, res, next){
@@ -88,8 +76,8 @@ function update_scrape_status(id, status, message, callback) {
   pg(stmt, [status, message, id], callback);
 }
 
-function scrape_success(id, callback) {
-  update_scrape_status(id, scrape_status.SUCCESS, null, callback);
+function scrape_success(id, message, callback) {
+  update_scrape_status(id, scrape_status.SUCCESS, message, callback);
 }
 
 function scrape_error(id, message, callback) {
@@ -103,7 +91,10 @@ function scrape_skipped(id, callback) {
 module.exports = exports = {
   pg:                pg,
   getContainers:     get_containers,
-  importContainers:  import_containers,
+  findPlace:         find_place,
+  insertPlace:       insert_place,
+  findContainer:     find_container,
+  insertContainer:   insert_container,
   getPlaces:         get_places,
   locatePlace:       locate_place,
   addScrape:         add_scrape,

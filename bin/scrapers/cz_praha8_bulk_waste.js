@@ -8,8 +8,6 @@ var
 scraper.url = 'http://www.praha8.cz/Velkoobjemove-kontejnery';
 
 scraper.parse = function(body, callback) {
-  this.info('Loading the page');
-
   // parse html page
   var containers = [],
     $ = cheerio.load(body);
@@ -36,10 +34,9 @@ scraper.parse = function(body, callback) {
       time_to: dates['time_to'],
       container_type: 'BULK_WASTE'
     };
-    console.info('Found place '+containers[i].place_name+' ('+containers[i].time_from+' - '+containers[i].time_to+')');
   });
 
-  // callback first argument is null - no error was raised
+  // first argument of callback is null - no error was raised
   callback(null, containers);
 };
 
