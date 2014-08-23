@@ -22,6 +22,13 @@ describe('util', function() {
       });
     });
 
+    it('should support unicode "en dash" character', function() {
+      expect(util.parseDate('31.12.', '13.00\u201317.00')).to.eql({
+        'time_from': new Date(2012, 11, 31, 13, 0),
+        'time_to': new Date(2012, 11, 31, 17, 0)
+      });
+    });
+
     it('should set date to next year if current date > parsed date', function() {
       expect(util.parseDate('01.01.', '13.00-17.00')).to.eql({
         'time_from': new Date(2013, 0, 1, 13, 0),

@@ -3,11 +3,11 @@
  */
 function parse_date(date, time) {
   // expecting format '31.12.', '13.00–17.00'
-  if (!date || !date.search('^\d{2}\.\d{2}\.$')) {
+  if (!date || date.search(/^\d{1,2}\.\d{1,2}\.$/) == -1) {
     console.error('Invalid date ['+date+']');
     return null;
   }
-  if (!time || !time.search('^\d{2}\.\d{2}-\d{2}\.\d{2}$')) {
+  if (!time || time.search(/^\d{1,2}\.\d{2}[-\u2013]\d{1,2}\.\d{2}$/) == -1) {
     console.error('Invalid time interval ['+time+']');
     return null;
   }
