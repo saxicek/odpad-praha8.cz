@@ -26,7 +26,7 @@ function find_container(place_id, time_from, time_to, container_type, callback) 
 
 function insert_container(place_id, time_from, time_to, container_type, callback) {
   var stmt = "INSERT INTO container (place_id, time_from, time_to, container_type) VALUES ($1::integer, $2::timestamp AT TIME ZONE 'Europe/Prague', $3::timestamp AT TIME ZONE 'Europe/Prague', $4::text);";
-  pg(stmt, [place_id, time_from, time_to, container_type], callback)
+  pg(stmt, [place_id, time_from, time_to, container_type], callback);
 }
 
 function get_containers(req, res, next){

@@ -196,8 +196,8 @@ define([
             label = config.containerTypes[m.get('container_type')].label;
             icon = L.AwesomeMarkers.icon(config.containerTypes[m.get('container_type')].icon);
           } else {
-            label = config.containerTypes['__DEFAULT__'].label;
-            icon = L.AwesomeMarkers.icon(config.containerTypes['__DEFAULT__'].icon);
+            label = config.containerTypes.__DEFAULT__.label;
+            icon = L.AwesomeMarkers.icon(config.containerTypes.__DEFAULT__.icon);
           }
 
           if (!(label in markerLayers)) {

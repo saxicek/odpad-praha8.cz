@@ -30,8 +30,8 @@ scraper.parse = function(body, callback) {
     var dates = util.parseDate(raw_date, raw_time);
     containers[i] = {
       place_name: place_name,
-      time_from: dates['time_from'],
-      time_to: dates['time_to'],
+      time_from: dates.time_from,
+      time_to: dates.time_to,
       container_type: 'BULK_WASTE'
     };
   });

@@ -67,5 +67,5 @@ app.get('/', function (req, res, next)
 app.get(/\/(css|js|img|test)\/?.*/, restify.serveStatic({directory: './static/'}));
 
 app.listen(config.port, config.ip, function () {
-  console.info( "Listening on " + config.ip + ", port " + config.port )
+  console.info( "Listening on " + config.ip + ", port " + config.port );
 });

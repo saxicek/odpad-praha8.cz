@@ -66,7 +66,7 @@ var scraperPrototype = {
             async.mapLimit(containers, config.db_inserts_parallel_limit, self.addContainer, function(err, results) {
               if (err) return callback(err);
               callback(null, results.reduce(self.reduceInsertResults));
-            })
+            });
           }
         },
         function(err, result) {
@@ -127,7 +127,7 @@ var scraperPrototype = {
         // place not found - insert it
         db.insertPlace(place_name, function(err) {
           callback(err, { parsed: 1, inserted: (err ? 0 : 1) });
-        })
+        });
       }
     });
   },
@@ -148,12 +148,12 @@ var scraperPrototype = {
       function(res, callback) {
         if (res) {
           // container found
-          return callback(null, { parsed: 1, inserted: 0 })
+          return callback(null, { parsed: 1, inserted: 0 });
         } else {
           // container not found - insert it
           db.insertContainer(place_id, container.time_from, container.time_to, container.container_type, function(err) {
             callback(err, { parsed: 1, inserted: (err ? 0 : 1) });
-          })
+          });
         }
       }
     ], callback);
