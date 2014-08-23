@@ -39,6 +39,7 @@ module.exports = function(grunt) {
           'src/js/**/*.js'
         ],
         tasks: [
+          'mochaTest',
           'jshint',
           'requirejs:development'
         ]
@@ -56,6 +57,15 @@ module.exports = function(grunt) {
       client: [
         'src/js/**/*.js'
       ]
+    },
+    // Configure a mochaTest task
+    mochaTest: {
+      test: {
+        options: {
+          reporter: 'spec'
+        },
+        src: ['test/**/*.js']
+      }
     }
   });
 
@@ -64,6 +74,7 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-requirejs');
   grunt.loadNpmTasks('grunt-contrib-jshint');
   grunt.loadNpmTasks('grunt-contrib-watch');
+  grunt.loadNpmTasks('grunt-mocha-test');
 
   grunt.registerTask('build', ['requirejs:production']);
   grunt.registerTask('deploy', ['migrate:up']);
