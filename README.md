@@ -1,6 +1,9 @@
 # Map of waste containers in Prague 8
 *powered by RESTify, PostGIS, and Leaflet maps*
 
+[![Dependency Status](https://david-dm.org/saxicek/odpad-praha8.cz.svg?theme=shields.io)](https://david-dm.org/saxicek/odpad-praha8.cz)
+[![devDependency Status](https://david-dm.org/saxicek/odpad-praha8.cz/dev-status.svg?theme=shields.io)](https://david-dm.org/saxicek/odpad-praha8.cz#info=devDependencies)
+
 A basic mapping application using PostGIS, node-restify, LeafLet Maps and map tiles from several map providers, to visualize the locations of waste containers in Prague 8.
 
 <a href='http://odpad-praha8.rhcloud.com/'><img src='http://odpad-praha8.rhcloud.com/img/odpad.png'/></a>
