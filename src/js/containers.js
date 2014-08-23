@@ -3,7 +3,7 @@ require.config({
     'async': '../../bower_components/requirejs-plugins/src/async',
     'jquery': '../../bower_components/jquery/dist/jquery',
     'leaflet': '//cdn.leafletjs.com/leaflet-0.7.2/leaflet',
-    'leaflet.awesome-markers': '//cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.0/leaflet.awesome-markers.min',
+    'Leaflet.awesome-markers': '//cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.0/leaflet.awesome-markers.min',
     'underscore': '../../bower_components/underscore/underscore',
     'backbone': '../../bower_components/backbone/backbone',
     'moment': '../../bower_components/moment/moment',
@@ -34,7 +34,7 @@ require.config({
     'underscore': {
       exports: '_'
     },
-    'leaflet.awesome-markers': {
+    'Leaflet.awesome-markers': {
       deps: ['leaflet']
     }
   }

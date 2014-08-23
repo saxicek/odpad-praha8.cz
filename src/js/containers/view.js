@@ -11,7 +11,7 @@ define([
   'config',
   'moment-timezone',
   'moment-timezone-data',
-  'leaflet.awesome-markers'
+  'Leaflet.awesome-markers'
 ], function ($, _, Backbone, geoUtil, map, collection, appState, mapLayer, ga, config, moment) {
 
   "use strict";
