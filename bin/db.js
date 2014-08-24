@@ -76,6 +76,15 @@ function update_scrape_status(id, status, message, callback) {
   pg(stmt, [status, message, id], callback);
 }
 
+function find_last_scrape(scraper_name, status, callback) {
+  if (arguments.length == 2) {
+    callback = status;
+    status = scrape_status.SUCCESS;
+  }
+  var stmt = "SELECT MAX(time_from) AS time_from FROM scrape_status WHERE status = $1::text AND scraper_name = $2::text;";
+  pg.first(stmt, [status, scraper_name], callback);
+}
+
 function scrape_success(id, message, callback) {
   update_scrape_status(id, scrape_status.SUCCESS, message, callback);
 }
@@ -84,7 +93,7 @@ function scrape_error(id, message, callback) {
   update_scrape_status(id, scrape_status.ERROR, message, callback);
 }
 
-function scrape_skipped(id, callback) {
+function scrape_skipped(id, message, callback) {
   update_scrape_status(id, scrape_status.SKIPPED, message, callback);
 }
 
@@ -98,7 +107,12 @@ module.exports = exports = {
   getPlaces:         get_places,
   locatePlace:       locate_place,
   addScrape:         add_scrape,
+  findLastScrape:    find_last_scrape,
   scrapeSuccess:     scrape_success,
   scrapeError:       scrape_error,
-  scrapeSkipped:     scrape_skipped
+  scrapeSkipped:     scrape_skipped,
+  SCRAPE_STATUS_SUCCESS: scrape_status.SUCCESS,
+  SCRAPE_STATUS_SKIPPED: scrape_status.SKIPPED,
+  SCRAPE_STATUS_ERROR:   scrape_status.ERROR,
+  SCRAPE_STATUS_RUNNING: scrape_status.RUNNING
 };

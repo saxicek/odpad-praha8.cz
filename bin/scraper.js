@@ -5,6 +5,7 @@ var
   path         = require('path'),
   util         = require('util'),
   async        = require('async'),
+  moment       = require('moment'),
   EventEmitter = require('events').EventEmitter,
   db           = require('./db.js'),
 
@@ -12,7 +13,9 @@ var
   ;
 
 var scraperPrototype = {
-  scrape: function() {
+  minScrapeInterval: null,
+  EXCEPTION_SKIP: 'SCRAPER_EXCEPTION_SKIP',
+  scrape: function(callback) {
     var
       self = this,
       containers,
@@ -27,6 +30,20 @@ var scraperPrototype = {
       function(rows, result, callback) {
         scrapeId = rows[0].id;
         callback();
+      },
+      // check that we don't scrape too often
+      function(callback) {
+        db.findLastScrape(self.name, function(err, res) {
+          if (err) return callback(err);
+          // check that we don't run too often
+          if (res && self.minScrapeInterval && moment().isBefore(moment(res.time_from).add(moment.duration(self.minScrapeInterval)))) {
+            // skip the scraping
+            callback(self.EXCEPTION_SKIP);
+          } else {
+            // continue
+            callback();
+          }
+        });
       },
       // fetch scraper URL
       function(callback) {
@@ -81,23 +98,34 @@ var scraperPrototype = {
     ],
     function(err, result) {
       if (err) {
-        // log error to console
-        self.error('Scraper error!', err);
-      }
-      // update scrape status in DB
-      if (scrapeId) {
-        if (err) {
-          db.scrapeError(scrapeId, err, function(err) {
-            if (err) self.error('Cannot update scraper status to error', err);
-            self.info('Scraping finished with error!');
-          });
+        // update scrape status in DB
+        if (scrapeId) {
+          if (err == self.EXCEPTION_SKIP) {
+            db.scrapeSkipped(scrapeId, err, function(err) {
+              if (err) self.error('Cannot update scraper status to skipped', err);
+              self.info('Scrape skipped!');
+            });
+          } else {
+            db.scrapeError(scrapeId, err, function(err) {
+              if (err) self.error('Cannot update scraper status to error', err);
+              self.error('Scrape finished with error!', err);
+            });
+          }
         } else {
+          // log error to console
+          self.error('Scrape finished with error!', err);
+        }
+      } else {
+        if (scrapeId) {
           db.scrapeSuccess(scrapeId, JSON.stringify(result), function(err) {
             if (err) self.error('Cannot update scraper status to success', err);
-            self.info('Scraping finished successfully!');
+            self.info('Scrape finished successfully!');
           });
+        } else {
+          self.error('Scrape finished successfully but no scrape id was set!', err);
         }
       }
+      callback();
     });
   },
   info: function(message) {
