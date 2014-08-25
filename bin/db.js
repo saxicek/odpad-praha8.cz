@@ -3,7 +3,7 @@ var config      = require('config'),
 
 pg.connectionParameters = config.pg_config + '/' + config.schema_name;
 
-var scrape_status = {
+var SCRAPE_STATUS = {
   RUNNING: 'RUN',
   SKIPPED: 'SKP',
   SUCCESS: 'SUC',
@@ -68,7 +68,7 @@ function locate_place(id, lat, lng, callback) {
 
 function add_scrape(scraper_name, callback) {
   var stmt = "INSERT INTO scrape_status (scraper_name, status) VALUES ($1::text, $2::text) RETURNING id;";
-  pg(stmt, [scraper_name, scrape_status.RUNNING], callback);
+  pg(stmt, [scraper_name, SCRAPE_STATUS.RUNNING], callback);
 }
 
 function update_scrape_status(id, status, message, callback) {
@@ -79,22 +79,57 @@ function update_scrape_status(id, status, message, callback) {
 function find_last_scrape(scraper_name, status, callback) {
   if (arguments.length == 2) {
     callback = status;
-    status = scrape_status.SUCCESS;
+    status = SCRAPE_STATUS.SUCCESS;
   }
   var stmt = "SELECT MAX(time_from) AS time_from FROM scrape_status WHERE status = $1::text AND scraper_name = $2::text;";
   pg.first(stmt, [status, scraper_name], callback);
 }
 
 function scrape_success(id, message, callback) {
-  update_scrape_status(id, scrape_status.SUCCESS, message, callback);
+  update_scrape_status(id, SCRAPE_STATUS.SUCCESS, message, callback);
 }
 
 function scrape_error(id, message, callback) {
-  update_scrape_status(id, scrape_status.ERROR, message, callback);
+  update_scrape_status(id, SCRAPE_STATUS.ERROR, message, callback);
 }
 
 function scrape_skipped(id, message, callback) {
-  update_scrape_status(id, scrape_status.SKIPPED, message, callback);
+  update_scrape_status(id, SCRAPE_STATUS.SKIPPED, message, callback);
+}
+
+function get_scrape_status(callback) {
+  var stmt =
+    "with " +
+      "last_scrape as (" +
+      "        select scraper_name" +
+      "              ,status" +
+      "              ,max(time_from) as time_from" +
+      "          from scrape_status" +
+      "         group by scraper_name, status" +
+      ")," +
+      "last_scrape_full as (" +
+      "        select s.*" +
+      "          from scrape_status s" +
+      "          join last_scrape l on l.scraper_name = s.scraper_name" +
+      "                            and l.status = s.status" +
+      "                            and l.time_from = s.time_from" +
+      ")," +
+      "scrapers as (" +
+      "        select distinct scraper_name" +
+      "          from scrape_status" +
+      ")" +
+      "select scraper_name" +
+      "      ,(select time_from at time zone 'Europe/Prague' from last_scrape l where l.scraper_name = s.scraper_name and l.status = 'SUC') suc_time_from" +
+      "      ,(select time_to at time zone 'Europe/Prague' from last_scrape_full l where l.scraper_name = s.scraper_name and l.status = 'SUC') suc_time_to" +
+      "      ,(select message from last_scrape_full l where l.scraper_name = s.scraper_name and l.status = 'SUC') suc_message" +
+      "      ,(select time_from at time zone 'Europe/Prague' from last_scrape l where l.scraper_name = s.scraper_name and l.status = 'ERR') err_time_from" +
+      "      ,(select time_to at time zone 'Europe/Prague' from last_scrape_full l where l.scraper_name = s.scraper_name and l.status = 'ERR') err_time_to" +
+      "      ,(select message from last_scrape_full l where l.scraper_name = s.scraper_name and l.status = 'ERR') err_message" +
+      "      ,(select time_from at time zone 'Europe/Prague' from last_scrape l where l.scraper_name = s.scraper_name and l.status = 'SKP') skp_time_from" +
+      "      ,(select time_to at time zone 'Europe/Prague' from last_scrape_full l where l.scraper_name = s.scraper_name and l.status = 'SKP') skp_time_to" +
+      "      ,(select message from last_scrape_full l where l.scraper_name = s.scraper_name and l.status = 'SKP') skp_message" +
+      "  from scrapers s";
+  pg(stmt, null, callback);
 }
 
 module.exports = exports = {
@@ -111,8 +146,9 @@ module.exports = exports = {
   scrapeSuccess:     scrape_success,
   scrapeError:       scrape_error,
   scrapeSkipped:     scrape_skipped,
-  SCRAPE_STATUS_SUCCESS: scrape_status.SUCCESS,
-  SCRAPE_STATUS_SKIPPED: scrape_status.SKIPPED,
-  SCRAPE_STATUS_ERROR:   scrape_status.ERROR,
-  SCRAPE_STATUS_RUNNING: scrape_status.RUNNING
+  getScrapeStatus:   get_scrape_status,
+  SCRAPE_STATUS_SUCCESS: SCRAPE_STATUS.SUCCESS,
+  SCRAPE_STATUS_SKIPPED: SCRAPE_STATUS.SKIPPED,
+  SCRAPE_STATUS_ERROR:   SCRAPE_STATUS.ERROR,
+  SCRAPE_STATUS_RUNNING: SCRAPE_STATUS.RUNNING
 };

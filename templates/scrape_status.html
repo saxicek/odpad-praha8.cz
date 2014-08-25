@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="initial-scale=1,user-scalable=no,maximum-scale=1,width=device-width">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <title>Scrape status</title>
+
+    <!-- Core CSS -->
+    <link href="http://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" rel="stylesheet" type="text/css">
+</head>
+
+<body>
+    <div class="container">
+        <h1>Scrape status <small>Přehled výsledků automatického získávání dat o kontejnerech</small></h1>
+        <table class="table">
+            <tr>
+                <th>Scraper</th>
+                <th>Poslední úspěšný běh</th>
+                <th>Trvání</th>
+                <th>Poslední neúspěšný běh</th>
+                <th>Trvání</th>
+            </tr>
+            {{~it :value:index}}
+            <tr>
+                <td>{{=value.scraper_name}}</td>
+                <td>
+                    {{=value.suc_time_from_str}}
+                    {{? value.containers_parsed }}
+                    <span class="badge alert-info" title="Počet načtených kontejnerů">{{=value.containers_parsed}}</span>
+                    <span class="badge alert-success" title="Počet uložených kontejnerů">{{=value.containers_inserted}}</span>
+                    {{?}}
+                </td>
+                <td>{{=value.suc_duration_str}}</td>
+                <td>{{=value.err_time_from_str}}</td>
+                <td>{{=value.err_duration_str}}</td>
+            </tr>
+            {{~}}
+        </table>
+    </div>
+
+    <script src="//localhost:35729/livereload.js"></script>
+
+</body>
+</html>

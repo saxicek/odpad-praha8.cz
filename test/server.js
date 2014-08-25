@@ -1,6 +1,5 @@
 var
   expect   = require('chai').expect,
-  sinon    = require('sinon'),
   restify  = require('restify'),
   pjson    = require('../package.json'),
   config   = require('config');
@@ -21,6 +20,21 @@ describe('server', function() {
     });
     it('should return 200 even for current ETag', function(done) {
       client.get({path: '/status', headers: {'If-None-Match': pjson.version}}, function(err, req, res) {
+        expect(res.statusCode).to.equal(200);
+        done();
+      });
+    });
+  });
+
+  describe('/status/scrape', function() {
+    it('should return a 200 response', function(done) {
+      client.get('/status/scrape', function(err, req, res) {
+        expect(res.statusCode).to.equal(200);
+        done();
+      });
+    });
+    it('should return 200 even for current ETag', function(done) {
+      client.get({path: '/status/scrape', headers: {'If-None-Match': pjson.version}}, function(err, req, res) {
         expect(res.statusCode).to.equal(200);
         done();
       });
