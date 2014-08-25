@@ -21,6 +21,7 @@ var scraperPrototype = {
       containers,
       scrapeId;
 
+    callback = callback || function() {};
     async.waterfall([
       // add scrape_status record to DB
       function(callback) {
