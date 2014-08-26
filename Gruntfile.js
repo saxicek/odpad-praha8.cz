@@ -67,14 +67,6 @@ module.exports = function(grunt) {
         }
       }
     },
-    migrate : {
-      up : "",
-      create: "",
-      down: "",
-      options: {
-        binaryPath: "migrate" //Path to the migrate module
-      }
-    },
     watch: {
       livereload: {
         options: {
@@ -136,11 +128,21 @@ module.exports = function(grunt) {
         },
         src: ['test/**/*.js']
       }
+    },
+    migrate: {
+      options: {
+        env: {
+          // The replace() call is a workaround for Openshift which uses postgresql://user:pass@ip:port
+          // URL format. dm-migrate supports only pg:// or postgres:// in version 0.7.1
+          DATABASE_URL: config.pg_config.replace('postgresql://', 'pg://') + '/' + config.schema_name
+        },
+        verbose: true
+      }
     }
   });
 
   // Load plugins
-  grunt.loadNpmTasks('grunt-migrate');
+  grunt.loadNpmTasks('grunt-db-migrate');
   grunt.loadNpmTasks('grunt-contrib-requirejs');
   grunt.loadNpmTasks('grunt-contrib-jshint');
   grunt.loadNpmTasks('grunt-contrib-watch');

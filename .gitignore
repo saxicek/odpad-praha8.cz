@@ -2,4 +2,6 @@
 bower_components
 node_modules
 Odpad-praha8.cz.iml
-migrations/.migrate
+.rebooted
+config/local.js
+config/runtime.json
