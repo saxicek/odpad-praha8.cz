@@ -44,7 +44,7 @@
   },
   "scripts": {
     "start": "node server.js",
-    "build": "HOME=$HOME/app-root/runtime bower install && grunt build",
+    "build": "HOME=$HOME/app-root/runtime bower install --config.interactive=false && grunt build",
     "deploy": "grunt deploy",
     "test": "make all"
   },
