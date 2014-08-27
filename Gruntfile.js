@@ -129,6 +129,25 @@ module.exports = function(grunt) {
         src: ['test/**/*.js']
       }
     },
+    // Usage:
+    // $ grunt bump:patch
+    // $ grunt bump:minor
+    // $ grunt bump:major
+    bump: {
+      options: {
+        files: ['package.json'],
+        updateConfigs: [],
+        commit: true,
+        commitMessage: 'Release v%VERSION%',
+        commitFiles: ['package.json'],
+        createTag: true,
+        tagName: 'v%VERSION%',
+        tagMessage: 'Version %VERSION%',
+        push: true,
+        pushTo: 'origin',
+        gitDescribeOptions: '--tags --always --abbrev=1 --dirty=-d'
+      }
+    },
     migrate: {
       options: {
         env: {
@@ -150,6 +169,7 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-concurrent');
   grunt.loadNpmTasks('grunt-nodemon');
   grunt.loadNpmTasks('grunt-node-inspector');
+  grunt.loadNpmTasks('grunt-bump');
 
   grunt.registerTask('build', ['requirejs:prod']);
   grunt.registerTask('deploy', ['migrate:up']);
