@@ -6,6 +6,10 @@ var
 ;
 
 scraper.url = 'http://www.praha8.cz/Velkoobjemove-kontejnery';
+
+// district used for validation of container places
+scraper.districtName = 'Praha 8';
+
 // minimum interval between scrapes; format is moment.duration(String);
 scraper.minScrapeInterval = '1.00:00:00'; // once a day
 

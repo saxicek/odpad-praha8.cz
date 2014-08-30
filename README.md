@@ -112,6 +112,9 @@ When you're ready, you can push changes to your OpenShift-hosted application env
 
     `git push`
 
+## Geo Data
+Application uses geo data from [Geoportal Praha](http://www.geoportalpraha.cz/) for validation that place is located in correct district. Dataset from [this](http://www.geoportalpraha.cz/cs/clanek/159/datove-sady-ke-stazeni#.U_86uvnV-K-) location is used. Please refer to [Geo data load](doc/geo_data_load.md) documentation for step-by-step description how to load district data.
+
 ## License
 This code is licensed under the MIT License. (See LICENSE.txt)
 
@@ -126,3 +129,4 @@ This application makes use of or was inspired by the following projects:
  - [Google Maps Javascript API](https://developers.google.com/maps/documentation/javascript/)
  - [OpenShift: Instant Mapping Applications with PostGIS and Nodejs](https://www.openshift.com/blogs/instant-mapping-applications-with-postgis-and-nodejs)
  - [Google Maps tiles with Leaflet](http://matchingnotes.com/using-google-map-tiles-with-leaflet)
+ - [Geoportal Praha](http://www.geoportalpraha.cz/)

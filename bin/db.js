@@ -10,13 +10,17 @@ var SCRAPE_STATUS = {
   ERROR: 'ERR'
 };
 
-function find_place(place_name, callback) {
-  pg.first('SELECT id FROM place WHERE place_name = $1::text;', place_name, callback);
+function find_place(place_name, district_id, callback) {
+  if (district_id) {
+    return pg.first('SELECT id FROM place WHERE place_name = $1::text AND district_id = $2::integer;', [place_name, district_id], callback);
+  } else {
+    return pg.first('SELECT id FROM place WHERE place_name = $1::text AND district_id IS NULL;', place_name, callback);
+  }
 }
 
-function insert_place(place_name, callback) {
-  var stmt = 'INSERT INTO place (place_name) VALUES ($1::text);';
-  pg(stmt, [place_name], callback);
+function insert_place(place_name, district_id, callback) {
+  var stmt = 'INSERT INTO place (place_name, district_id) VALUES ($1::text, $2::integer);';
+  pg(stmt, [place_name, district_id], callback);
 }
 
 function find_container(place_id, time_from, time_to, container_type, callback) {
@@ -132,6 +136,10 @@ function get_scrape_status(callback) {
   pg(stmt, null, callback);
 }
 
+function find_district(district_name, callback) {
+  pg.first('SELECT id FROM district WHERE district_name = $1::text;', district_name, callback);
+}
+
 module.exports = exports = {
   pg:                pg,
   getContainers:     get_containers,
@@ -147,6 +155,7 @@ module.exports = exports = {
   scrapeError:       scrape_error,
   scrapeSkipped:     scrape_skipped,
   getScrapeStatus:   get_scrape_status,
+  findDistrict:      find_district,
   SCRAPE_STATUS_SUCCESS: SCRAPE_STATUS.SUCCESS,
   SCRAPE_STATUS_SKIPPED: SCRAPE_STATUS.SKIPPED,
   SCRAPE_STATUS_ERROR:   SCRAPE_STATUS.ERROR,

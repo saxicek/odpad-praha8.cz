@@ -14,6 +14,8 @@ var
 
 var scraperPrototype = {
   minScrapeInterval: null,
+  districtName: null,
+  districtId: null,
   EXCEPTION_SKIP: 'SCRAPER_EXCEPTION_SKIP',
   scrape: function(callback) {
     var
@@ -46,6 +48,23 @@ var scraperPrototype = {
           }
         });
       },
+      // get district id if scraper district name set
+      function(callback) {
+        if (self.districtName) {
+          db.findDistrict(self.districtName, function(err, res) {
+            if (err) return callback(err);
+            if (res) {
+              self.districtId = res.id;
+              callback();
+            } else {
+              callback('District with name "'+self.districtName+'" not found!');
+            }
+          });
+        } else {
+          self.info('Warning: District name for scraper '+self.name+' not set!');
+          callback();
+        }
+      },
       // fetch scraper URL
       function(callback) {
         self.info('Fetching the page ' + self.url);
@@ -69,10 +88,12 @@ var scraperPrototype = {
         async.series({
           // add places
           places: function(callback) {
-            // extract unique place names
+            self.info('Inserting places');
+            // extract unique place names and add district_id
             var places = containers
               .map(function(container) { return container.place_name; })
-              .filter(function(value, index, self) { return self.indexOf(value) === index; });
+              .filter(function(value, index, self) { return self.indexOf(value) === index; })
+              .map(function(place_name) { return { place_name: place_name, district_id: self.districtId }; });
             // add places
             async.mapLimit(places, config.db_inserts_parallel_limit, self.addPlace, function(err, results) {
               if (err) return callback(err);
@@ -81,6 +102,11 @@ var scraperPrototype = {
           },
           // add containers
           containers: function(callback) {
+            self.info('Inserting containers');
+            // add district id to containers
+            containers.forEach(function(container) {
+              container.district_id = self.districtId;
+            });
             async.mapLimit(containers, config.db_inserts_parallel_limit, self.addContainer, function(err, results) {
               if (err) return callback(err);
               callback(null, results.reduce(self.reduceInsertResults));
@@ -145,16 +171,16 @@ var scraperPrototype = {
       inserted: prev.inserted + curr.inserted
     };
   },
-  addPlace: function(place_name, callback) {
+  addPlace: function(place, callback) {
     // search for a place with same name first
-    db.findPlace(place_name, function(err, res) {
+    db.findPlace(place.place_name, place.district_id, function(err, res) {
       if (err) return callback(err);
       if (res) {
         // place found
         return callback(null, { parsed: 1, inserted: 0 });
       } else {
         // place not found - insert it
-        db.insertPlace(place_name, function(err) {
+        db.insertPlace(place.place_name, place.district_id, function(err) {
           callback(err, { parsed: 1, inserted: (err ? 0 : 1) });
         });
       }
@@ -165,7 +191,7 @@ var scraperPrototype = {
     async.waterfall([
       // search for a place
       function(callback) {
-        db.findPlace(container.place_name, callback);
+        db.findPlace(container.place_name, container.district_id, callback);
       },
       // check if container exists
       function(res, callback) {
