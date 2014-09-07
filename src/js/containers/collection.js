@@ -14,12 +14,17 @@ define([
 
     Containers = Backbone.Collection.extend({
       url: '/container'
+    }),
+
+    Districts = Backbone.Collection.extend({
+      url: '/district'
     })
   ;
 
   return {
     Places: Places,
-    Containers: Containers
+    Containers: Containers,
+    Districts: Districts
   };
 
 });

@@ -13,6 +13,8 @@ define([
         var unknownPlacesView = new view.UnknownPlaces({el: $('li.container-unknown-places'), model: appState.places});
         // init containers view
         var containersView = new view.Containers({model: appState.containers});
+        // init district borders view
+        var districtBorders = new view.DistrictBorders();
         // load data to collections
         appState.places.fetch({reset: true, success: function() {
           // load containers only after places are loaded

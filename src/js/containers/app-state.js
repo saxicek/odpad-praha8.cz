@@ -13,13 +13,15 @@ define([
   var
     filterDate = new Backbone.Model({'filter_date': moment(0, 'HH')}),
     places = new collection.Places(),
-    containers = new collection.Containers()
+    containers = new collection.Containers(),
+    districts = new collection.Districts()
   ;
 
   return {
     filterDate: filterDate,
     places: places,
-    containers: containers
+    containers: containers,
+    districts: districts
   };
 
 });

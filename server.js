@@ -90,6 +90,22 @@ app.get('/status/scrape', function (req, res, next) {
   });
 });
 
+app.get('/district/:id', function (req, res, next) {
+  db.findDistrict(req.params.id, function(err, district) {
+    if (err) {
+      return next(new Error(err.message));
+    }
+
+    if (!district) {
+      res.send(404, new Error('District with id '+req.params.id+' not found!'));
+      return next(false);
+    }
+
+    res.send(district.json);
+    return next();
+  });
+});
+
 
 ///--- Static content
 

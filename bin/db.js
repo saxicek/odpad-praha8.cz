@@ -47,7 +47,7 @@ function get_containers(req, res, next){
 
 function get_places(req, res, next){
   console.info('Selecting places');
-  pg('SELECT id, place_name, ST_X(the_geom) AS lng, ST_Y(the_geom) AS lat FROM place;', function(err, rows, result) {
+  pg('SELECT id, place_name, ST_X(the_geom) AS lng, ST_Y(the_geom) AS lat, district_id FROM place;', function(err, rows, result) {
     if(err) {
       console.error('Error running get_places query\n', err);
       return next(err);
@@ -136,8 +136,22 @@ function get_scrape_status(callback) {
   pg(stmt, null, callback);
 }
 
-function find_district(district_name, callback) {
+function find_district_id(district_name, callback) {
   pg.first('SELECT id FROM district WHERE district_name = $1::text;', district_name, callback);
+}
+
+function find_district(district_id, callback) {
+  var stmt = "SELECT row_to_json(f) AS json " +
+    "         FROM (SELECT 'Feature' AS type " +
+    "                      ,st_asgeojson(d.the_geom) ::json AS geometry " +
+    "                      ,row_to_json(dp) AS properties " +
+    "                 FROM district AS d " +
+    "                 JOIN (SELECT id " +
+    "                             ,district_name " +
+    "                             ,description " +
+    "                         FROM district) AS dp ON d.id = dp.id " +
+    "                WHERE d.id = $1::integer) AS f";
+  pg.first(stmt, district_id, callback);
 }
 
 module.exports = exports = {
@@ -155,6 +169,7 @@ module.exports = exports = {
   scrapeError:       scrape_error,
   scrapeSkipped:     scrape_skipped,
   getScrapeStatus:   get_scrape_status,
+  findDistrictId:    find_district_id,
   findDistrict:      find_district,
   SCRAPE_STATUS_SUCCESS: SCRAPE_STATUS.SUCCESS,
   SCRAPE_STATUS_SKIPPED: SCRAPE_STATUS.SKIPPED,

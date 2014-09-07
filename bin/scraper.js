@@ -51,7 +51,7 @@ var scraperPrototype = {
       // get district id if scraper district name set
       function(callback) {
         if (self.districtName) {
-          db.findDistrict(self.districtName, function(err, res) {
+          db.findDistrictId(self.districtName, function(err, res) {
             if (err) return callback(err);
             if (res) {
               self.districtId = res.id;

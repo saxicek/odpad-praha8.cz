@@ -28,7 +28,7 @@ define([
           'saveLoc');
 
         //clear pins on the map
-        vent.trigger('geoLocatePlace:placementStarted');
+        vent.trigger('geoLocatePlace:placementStarted', this.model);
       },
       render: function() {
         if (!this.model.hasLocation()) {
@@ -392,6 +392,41 @@ define([
           el.append(item);
         });
       }
+    }),
+
+    // view shows district borders on the map
+    DistrictBorders = Backbone.View.extend({
+      initialize:function () {
+        _.bindAll(this, 'renderDistrict', 'hideDistrict', 'render');
+        this.districtLayer = null;
+
+        vent.on('geoLocatePlace:placementStarted', this.renderDistrict);
+        vent.on('geoLocatePlace:placementFinished', this.hideDistrict);
+        vent.on('geoLocatePlace:placementCanceled', this.hideDistrict);
+      },
+      renderDistrict:function (place) {
+        if (place.get('district_id')) {
+          if (appState.districts.get(place.get('district_id'))) {
+            // district model already in the collection
+            this.model = appState.districts.get(place.get('district_id'));
+            this.render();
+          } else {
+            appState.districts.add([{id: place.get('district_id')}]);
+            this.model = appState.districts.get(place.get('district_id'));
+            this.model.fetch({success: this.render});
+          }
+        }
+      },
+      hideDistrict:function () {
+        if (this.districtLayer && map.hasLayer(this.districtLayer)) {
+          map.removeLayer(this.districtLayer);
+          this.districtLayer = null;
+        }
+      },
+      render:function () {
+        this.districtLayer = L.geoJson(this.model.get('geometry'), {style: {fillOpacity: 0}});
+        this.districtLayer.addTo(map);
+      }
     })
 
     ;
@@ -402,7 +437,8 @@ define([
     UnknownPlaces: UnknownPlaces,
     Containers: Containers,
     ContainerFilter: ContainerFilter,
-    ContainerTypeLegend: ContainerTypeLegend
+    ContainerTypeLegend: ContainerTypeLegend,
+    DistrictBorders: DistrictBorders
   };
 
 });
