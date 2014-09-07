@@ -34,7 +34,7 @@ OpenShift will automatically resolve `package.json` dependencies for hosted appl
 Project uses Bower for management of javascript library dependencies. You have to run `bower install` to download all required JS libraries. This step is required for further building of single JS script.
 
 ### Creating single minimized javascript file for distribution
-RequireJS and its utility r.js builds single javascript file which is used by index.html. The file is build by `r.js.cmd -o build-config.js`. It creates file `static/js/containers-min.js`.
+RequireJS and its utility r.js builds single javascript file `static/js/containers.js` which is used by index.html. The file is built by `grunt requirejs:prod`. For development purposes there is also target `grunt requirejs:dev` which just concatenates sources and does not minify them.
 
 ### Port-forwarding for local access to your remote db
 You can set up your own postgreSQL database for local development.  But, OpenShift provides a great way to get connected to your fully hosted and configured PostgreSQL database in mere seconds.  
