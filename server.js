@@ -43,13 +43,22 @@ app.get('/container/update', function (req, res, next) {
 app.get('/place', db.getPlaces);
 
 app.put('/place/:id', function (req, res, next) {
-  db.locatePlace(req.params.id, req.params.lat, req.params.lng, function(err) {
+  db.checkPlaceInDistrict(req.params.id, req.params.lat, req.params.lng, function(err) {
     if (err) {
-      return next(new Error(err.message));
-    } else {
+      if (err.name == 'PlaceNotFound') {
+        return next(new restify.ResourceNotFoundError(err.message));
+      } else if (err.name == 'InvalidPlacement') {
+        return next(new restify.InvalidContentError(err.message));
+      } else {
+        return next(err);
+      }
+    }
+      // place is located in the district (or district is not set)
+    db.locatePlace(req.params.id, req.params.lat, req.params.lng, function(err) {
+      next.ifError(err);
       res.send({id: req.params.id, lat: req.params.lat, lng: req.params.lng});
       return next();
-    }
+    });
   });
 });
 

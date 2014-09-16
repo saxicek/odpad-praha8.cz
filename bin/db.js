@@ -154,6 +154,33 @@ function find_district(district_id, callback) {
   pg.first(stmt, district_id, callback);
 }
 
+function check_place_in_district(place_id, lat, lng, callback) {
+  var stmt = "select case " +
+    "                  when p.district_id is null then 'Y'" +
+    "                  when st_contains(d.the_geom, ST_SetSRID(ST_MakePoint($1::float, $2::float), 4326)) then 'Y'" +
+    "                  else 'N'" +
+    "                end as check" +
+    "           from place p" +
+    "           left outer join district d on d.id = p.district_id" +
+    "          where p.id = $3;";
+  pg.first(stmt, [lng, lat, place_id], function(err, res) {
+    var error;
+    if (err) return callback(err);
+    if (!res) {
+      error = new Error('Place with given id not found!');
+      error.name = 'PlaceNotFound';
+      return callback(error);
+    }
+    if (res.check == 'N') {
+      error = new Error('Place not located in related district!');
+      error.name = 'InvalidPlacement';
+      return callback(error);
+    } else {
+      callback();
+    }
+  });
+}
+
 module.exports = exports = {
   pg:                pg,
   getContainers:     get_containers,
@@ -171,6 +198,7 @@ module.exports = exports = {
   getScrapeStatus:   get_scrape_status,
   findDistrictId:    find_district_id,
   findDistrict:      find_district,
+  checkPlaceInDistrict:  check_place_in_district,
   SCRAPE_STATUS_SUCCESS: SCRAPE_STATUS.SUCCESS,
   SCRAPE_STATUS_SKIPPED: SCRAPE_STATUS.SKIPPED,
   SCRAPE_STATUS_ERROR:   SCRAPE_STATUS.ERROR,

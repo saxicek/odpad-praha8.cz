@@ -1,8 +1,10 @@
 var
   expect   = require('chai').expect,
   restify  = require('restify'),
+  async    = require('async'),
   pjson    = require('../package.json'),
-  config   = require('config');
+  config   = require('config'),
+  db       = require('../bin/db.js');
 
 var client = restify.createJsonClient({
   url: 'http://' + config.ip + ':' + config.port,
@@ -51,6 +53,42 @@ describe('server', function() {
     it('should return "304 Not Modified" for current ETag', function(done) {
       client.get({path: '/', headers: {'If-None-Match': pjson.version}}, function(err, req, res) {
         expect(res.statusCode).to.equal(304);
+        done();
+      });
+    });
+  });
+
+  describe('/place/:id', function() {
+    beforeEach(function(done){
+      async.series([
+        function(cb) { db.pg("DELETE FROM place WHERE place_name LIKE 'test%';", null, cb); },
+        function(cb) { db.pg("DELETE FROM district WHERE district_name LIKE 'test%';", null, cb); },
+        function(cb) { db.pg("INSERT INTO district (id, district_name, the_geom) VALUES ($1::integer, $2::text, ST_MPolyFromText($3::text, 4326));",
+          [-1, 'test_district', 'MULTIPOLYGON (((0 1, 4 1, 4 2, 2 2, 2 4, 4 4, 4 5, 0 5, 0 1)))'], cb); },
+        function(cb) { db.pg("INSERT INTO place (id, place_name) VALUES ($1::integer, $2::text);", [-1, 'test_place'], cb); },
+        function(cb) { db.pg("INSERT INTO place (id, place_name, district_id) VALUES ($1::integer, $2::text, $3::integer);", [-2, 'test_place_2', -1], cb); }
+      ], done);
+    });
+
+    it('should return a 200 response', function(done) {
+      client.put('/place/-1', {lat: 2, lng: 1}, function(err, req, res) {
+        if (err) return done(err);
+        expect(res.statusCode).to.equal(200);
+        done();
+      });
+    });
+
+    it('should allow to place into district', function(done) {
+      client.put('/place/-2', {lat: 2, lng: 1}, function(err, req, res) {
+        if (err) return done(err);
+        expect(res.statusCode).to.equal(200);
+        done();
+      });
+    });
+
+    it('should not set place outside of district', function(done) {
+      client.put('/place/-2', {lat: 3, lng: 3}, function(err, req, res) {
+        expect(res.statusCode).to.equal(400);
         done();
       });
     });
