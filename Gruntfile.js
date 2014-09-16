@@ -37,11 +37,13 @@ module.exports = function(grunt) {
               }, 1000);
             });
           },
+          ignore: [
+            'test/**/*.*'
+          ],
           watch: [
             'templates/*.*',
             'bin/**/*.js',
             'config/*.js',
-            'test/**/*.js',
             'server.js'
           ]
         }
@@ -81,7 +83,9 @@ module.exports = function(grunt) {
         files: [
           // watch only .rebooted - depend on nodemon to restart server
           // whenever server files change
-          '.rebooted'
+          '.rebooted',
+          // and server tests - they are not monitored by nodemon
+          'test/**/*.js'
         ],
         tasks: [
           'mochaTest',
