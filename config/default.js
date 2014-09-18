@@ -5,4 +5,4 @@ module.exports = {
   schema_name: process.env.OPENSHIFT_APP_NAME || process.env.PG_MAP_TABLE_NAME || 'odpad',
   scrape_interval: 60 * 60 * 1000, // hourly (in milliseconds)
   db_inserts_parallel_limit: 5 // number of inserts into DB we want to run in parallel
-}
+};
