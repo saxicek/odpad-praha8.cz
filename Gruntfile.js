@@ -161,6 +161,15 @@ module.exports = function(grunt) {
         },
         verbose: true
       }
+    },
+    copy: {
+      // copy static files from bower_components to static/lib
+      main: {
+        files: [
+          {expand: true, cwd: 'bower_components/leaflet/dist/', src: ['**', '!*.js'], dest: 'static/lib/leaflet', filter: 'isFile'},
+          {expand: true, cwd: 'bower_components/Leaflet.awesome-markers/dist/', src: ['**', '!*.js'], dest: 'static/lib/Leaflet.awesome-markers', filter: 'isFile'}
+        ]
+      }
     }
   });
 
@@ -174,8 +183,9 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-nodemon');
   grunt.loadNpmTasks('grunt-node-inspector');
   grunt.loadNpmTasks('grunt-bump');
+  grunt.loadNpmTasks('grunt-contrib-copy');
 
-  grunt.registerTask('build', ['requirejs:prod']);
+  grunt.registerTask('build', ['requirejs:prod', 'copy:main']);
   grunt.registerTask('deploy', ['migrate:up']);
   grunt.registerTask('dev', ['concurrent']);
 

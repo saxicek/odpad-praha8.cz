@@ -131,7 +131,7 @@ app.get('/', function (req, res, next)
   res.end(index);
 });
 
-app.get(/\/(css|js|img|test)\/?.*/, restify.serveStatic({directory: './static/'}));
+app.get(/\/(css|js|img|lib|test)\/?.*/, restify.serveStatic({directory: './static/'}));
 
 app.listen(config.port, config.ip, function () {
   console.info( "Listening on " + config.ip + ", port " + config.port );

@@ -2,8 +2,8 @@ require.config({
   paths: {
     'async': '../../bower_components/requirejs-plugins/src/async',
     'jquery': '../../bower_components/jquery/dist/jquery',
-    'leaflet': '//cdn.leafletjs.com/leaflet-0.7.2/leaflet',
-    'Leaflet.awesome-markers': '//cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.0/leaflet.awesome-markers.min',
+    'leaflet': '../../bower_components/leaflet/dist/leaflet',
+    'Leaflet.awesome-markers': '../../bower_components/Leaflet.awesome-markers/dist/leaflet.awesome-markers.min',
     'underscore': '../../bower_components/underscore/underscore',
     'backbone': '../../bower_components/backbone/backbone',
     'moment': '../../bower_components/moment/moment',

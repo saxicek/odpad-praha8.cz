@@ -37,7 +37,8 @@
     "grunt-node-inspector": "~0.1.5",
     "db-migrate": "0.7.1",
     "grunt-db-migrate": "0.2.0",
-    "grunt-bump": "0.0.15"
+    "grunt-bump": "0.0.15",
+    "grunt-contrib-copy": "0.6.0"
   },
   "repository": {
     "type": "git",

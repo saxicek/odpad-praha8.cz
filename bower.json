@@ -21,6 +21,8 @@
     "moment-timezone": "0.2.1",
     "moment": "2.8.1",
     "requirejs": "~2.1.11",
-    "requirejs-plugins": "~1.0.2"
+    "requirejs-plugins": "~1.0.2",
+    "leaflet": "0.7.3",
+    "Leaflet.awesome-markers": "2.0.2"
   }
 }
