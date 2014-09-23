@@ -5,12 +5,12 @@ define(function () {
   return {
     // set map center
     mapCenter: [50.11, 14.47],
-    // Prague 8 borders
+    // Prague borders
     borders: {
-      minLat: 50.082975,
-      maxLat: 50.158379,
-      minLng: 14.386769,
-      maxLng: 14.504686
+      minLat: 49.942,
+      maxLat: 50.1775,
+      minLng: 14.2245,
+      maxLng: 14.7069
     },
     // big screen detection
     bigScreen: (document.body.clientWidth > 767),

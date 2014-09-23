@@ -1,7 +1,10 @@
 define([
   'gmaps',
-  'config'
-], function (gmaps, config) {
+  'config',
+  'leaflet',
+  'leaflet-pip',
+  'app-state'
+], function (gmaps, config, L, leafletPip, appState) {
 
   "use strict";
 
@@ -32,12 +35,37 @@ define([
       });
     },
 
-    // validates location - should be in Prague 8
-    isValidLocation = function(lat, lng) {
-      return lat < config.borders.maxLat &&
-        lat > config.borders.minLat &&
-        lng < config.borders.maxLng &&
-        lng > config.borders.minLng;
+    // validates location - should be in related district;
+    // if district is not defined then in Prague by default
+    isValidLocation = function(latLng, place) {
+      // by default check that marker is positioned in Prague
+      var
+        district,
+        isValid = latLng.lat < config.borders.maxLat &&
+                  latLng.lat > config.borders.minLat &&
+                  latLng.lng < config.borders.maxLng &&
+                  latLng.lng > config.borders.minLng
+        ;
+
+      if (place.get('district_id')) {
+        district = appState.districts.get(place.get('district_id'));
+        if (district) {
+          // district model already in the collection
+          if (district.has('geometry')) {
+            // pointInLayer returns array of matched layers; empty array if nothing was matched
+            isValid = (leafletPip.pointInLayer(latLng, L.geoJson(district.get('geometry')), true).length > 0);
+          }
+        } else {
+          // if district is not yet fetched, add it to district collection and
+          // return default value - there is also server side validation which
+          // can catch misplaced places
+          appState.districts.add([{id: place.get('district_id')}]);
+          appState.districts.get(place.get('district_id')).fetch();
+        }
+      }
+
+      return isValid;
+
     }
     ;
 

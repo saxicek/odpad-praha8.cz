@@ -53,8 +53,8 @@ define([
       },
       // function opens marker popup and binds click actions on buttons
       afterMarkerDrag:function () {
-        // check that marker is placed in Prague 8
-        if (!geoUtil.isValidLocation(this.marker.getLatLng().lat, this.marker.getLatLng().lng)) {
+        // check that marker is placed in district related to given place
+        if (!geoUtil.isValidLocation(this.marker.getLatLng(), this.model)) {
           this.marker.setLatLng(this.previousLoc);
         }
         this.marker.openPopup();

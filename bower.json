@@ -23,6 +23,7 @@
     "requirejs": "~2.1.11",
     "requirejs-plugins": "~1.0.2",
     "leaflet": "0.7.3",
+    "leaflet-pip": "0.1.0",
     "Leaflet.awesome-markers": "2.0.2"
   }
 }
