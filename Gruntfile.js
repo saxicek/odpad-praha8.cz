@@ -67,6 +67,18 @@ module.exports = function(grunt) {
         options: {
           optimize: 'none'
         }
+      },
+      test: {
+        options: {
+          baseUrl: 'client/test/js',
+          mainConfigFile: 'client/test/js/runner.js',
+          name: '../../../bower_components/requirejs/require',
+          include: 'runner',
+          out: 'static/test/js/runner.js',
+          wrap: true,
+          optimize: 'none',
+          findNestedDependencies: true
+        }
       }
     },
     watch: {
@@ -101,6 +113,16 @@ module.exports = function(grunt) {
           'requirejs:dev'
         ]
       },
+      clientTest: {
+        files: [
+          'client/src/js/**/*.js',
+          'client/test/js/**/*.js'
+        ],
+        tasks: [
+          'jshint:clientTest',
+          'requirejs:test'
+        ]
+      },
       configFiles: {
         files: [ 'Gruntfile.js', 'config/*.js' ],
         tasks: ['jshint:configFiles'],
@@ -118,6 +140,9 @@ module.exports = function(grunt) {
       ],
       client: [
         'client/src/js/**/*.js'
+      ],
+      clientTest: [
+        'client/test/js/**/*.js'
       ],
       configFiles: [
         'Gruntfile.js',
@@ -167,7 +192,8 @@ module.exports = function(grunt) {
       main: {
         files: [
           {expand: true, cwd: 'bower_components/leaflet/dist/', src: ['**', '!*.js'], dest: 'static/lib/leaflet', filter: 'isFile'},
-          {expand: true, cwd: 'bower_components/Leaflet.awesome-markers/dist/', src: ['**', '!*.js'], dest: 'static/lib/Leaflet.awesome-markers', filter: 'isFile'}
+          {expand: true, cwd: 'bower_components/Leaflet.awesome-markers/dist/', src: ['**', '!*.js'], dest: 'static/lib/Leaflet.awesome-markers', filter: 'isFile'},
+          {expand: true, cwd: 'node_modules/mocha/', src: ['*.css'], dest: 'static/test/css', filter: 'isFile'}
         ]
       }
     }
