@@ -103,10 +103,15 @@ var scraperPrototype = {
             }, {});
             // ... and then extract unique (place name, container type) and add district_id
             var places = [];
+
+            function flatten(place_name) {
+              places.push({ place_name: place_name, container_type: container_type, district_id: self.districtId });
+            }
+
             for (var container_type in reducedContainers) {
               if (reducedContainers.hasOwnProperty(container_type)) {
               reducedContainers[container_type]
-                .forEach(function(place_name) { places.push({ place_name: place_name, container_type: container_type, district_id: self.districtId }); });
+                .forEach(flatten);
               }
             }
             // add places
