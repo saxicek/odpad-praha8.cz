@@ -89,11 +89,26 @@ var scraperPrototype = {
           // add places
           places: function(callback) {
             self.info('Inserting places');
-            // extract unique place names and add district_id
-            var places = containers
-              .map(function(container) { return container.place_name; })
-              .filter(function(value, index, self) { return self.indexOf(value) === index; })
-              .map(function(place_name) { return { place_name: place_name, district_id: self.districtId }; });
+            // transform containers into places dictionary to prevent duplicate entries ...
+            var reducedContainers = containers.reduce(function(memo, value){
+              if (!memo.hasOwnProperty(value.container_type)) {
+                memo[value.container_type] = [value.place_name];
+              } else {
+                if (memo[value.container_type].indexOf(value.place_name) === -1) {
+                  // add unique only
+                  memo[value.container_type].push(value.place_name);
+                }
+              }
+              return memo;
+            }, {});
+            // ... and then extract unique (place name, container type) and add district_id
+            var places = [];
+            for (var container_type in reducedContainers) {
+              if (reducedContainers.hasOwnProperty(container_type)) {
+              reducedContainers[container_type]
+                .forEach(function(place_name) { places.push({ place_name: place_name, container_type: container_type, district_id: self.districtId }); });
+              }
+            }
             // add places
             async.mapLimit(places, config.db_inserts_parallel_limit, self.addPlace, function(err, results) {
               if (err) return callback(err);
@@ -173,14 +188,14 @@ var scraperPrototype = {
   },
   addPlace: function(place, callback) {
     // search for a place with same name first
-    db.findPlace(place.place_name, place.district_id, function(err, res) {
+    db.findPlace(place.place_name, place.district_id, place.container_type, function(err, res) {
       if (err) return callback(err);
       if (res) {
         // place found
         return callback(null, { parsed: 1, inserted: 0 });
       } else {
         // place not found - insert it
-        db.insertPlace(place.place_name, place.district_id, function(err) {
+        db.insertPlace(place.place_name, place.district_id, place.container_type, function(err) {
           callback(err, { parsed: 1, inserted: (err ? 0 : 1) });
         });
       }
@@ -191,7 +206,7 @@ var scraperPrototype = {
     async.waterfall([
       // search for a place
       function(callback) {
-        db.findPlace(container.place_name, container.district_id, callback);
+        db.findPlace(container.place_name, container.district_id, container.container_type, callback);
       },
       // check if container exists
       function(res, callback) {

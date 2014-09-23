@@ -43,8 +43,15 @@ define([
         return this;
       },
       addMarker: function(loc) {
+        var icon;
+        if (config.containerTypes[this.model.get('container_type')]) {
+          icon = L.AwesomeMarkers.icon(config.containerTypes[this.model.get('container_type')].icon);
+        } else {
+          icon = L.AwesomeMarkers.icon(config.containerTypes.__DEFAULT__.icon);
+        }
+
         // add pin and show info message
-        this.marker = L.marker(loc, {draggable:true})
+        this.marker = L.marker(loc, {draggable:true, icon:icon})
           .bindPopup(this.popupTpl({place_name: this.model.get('place_name')}), {closeButton:false})
           .on('dragstart', this.saveLoc)
           .on('dragend', this.afterMarkerDrag)

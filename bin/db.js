@@ -10,17 +10,17 @@ var SCRAPE_STATUS = {
   ERROR: 'ERR'
 };
 
-function find_place(place_name, district_id, callback) {
+function find_place(place_name, district_id, container_type, callback) {
   if (district_id) {
-    return pg.first('SELECT id FROM place WHERE place_name = $1::text AND district_id = $2::integer;', [place_name, district_id], callback);
+    return pg.first('SELECT id FROM place WHERE place_name = $1::text AND district_id = $2::integer AND container_type = $3::text;', [place_name, district_id, container_type], callback);
   } else {
-    return pg.first('SELECT id FROM place WHERE place_name = $1::text AND district_id IS NULL;', place_name, callback);
+    return pg.first('SELECT id FROM place WHERE place_name = $1::text AND district_id IS NULL AND container_type = $2::text;', [place_name, container_type], callback);
   }
 }
 
-function insert_place(place_name, district_id, callback) {
-  var stmt = 'INSERT INTO place (place_name, district_id) VALUES ($1::text, $2::integer);';
-  pg(stmt, [place_name, district_id], callback);
+function insert_place(place_name, district_id, container_type, callback) {
+  var stmt = 'INSERT INTO place (place_name, district_id, container_type) VALUES ($1::text, $2::integer, $3::text);';
+  pg(stmt, [place_name, district_id, container_type], callback);
 }
 
 function find_container(place_id, time_from, time_to, container_type, callback) {
@@ -47,7 +47,7 @@ function get_containers(req, res, next){
 
 function get_places(req, res, next){
   console.info('Selecting places');
-  pg('SELECT id, place_name, ST_X(the_geom) AS lng, ST_Y(the_geom) AS lat, district_id FROM place;', function(err, rows, result) {
+  pg('SELECT id, place_name, ST_X(the_geom) AS lng, ST_Y(the_geom) AS lat, district_id, container_type FROM place;', function(err, rows, result) {
     if(err) {
       console.error('Error running get_places query\n', err);
       return next(err);
