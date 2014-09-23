@@ -55,12 +55,6 @@ define([
             // pointInLayer returns array of matched layers; empty array if nothing was matched
             isValid = (leafletPip.pointInLayer(latLng, L.geoJson(district.get('geometry')), true).length > 0);
           }
-        } else {
-          // if district is not yet fetched, add it to district collection and
-          // return default value - there is also server side validation which
-          // can catch misplaced places
-          appState.districts.add([{id: place.get('district_id')}]);
-          appState.districts.get(place.get('district_id')).fetch();
         }
       }
 

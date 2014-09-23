@@ -25,22 +25,44 @@ define([
       initialize:function () {
         _.bindAll(this, 'render', 'addMarker', 'afterMarkerDrag',
           'updateMarkerBindings', 'unknownPlaced', 'unknownNotPlaced',
-          'saveLoc');
+          'saveLoc', 'districtLoaded');
 
         this.popupTpl = _.template($('#locatePopupTemplate').html());
 
         //clear pins on the map
-        vent.trigger('geoLocatePlace:placementStarted', this.model);
+        vent.trigger('geoLocatePlace:initialize', this.model);
       },
       render: function() {
-        if (!this.model.hasLocation()) {
-          // try to geocode the location
-          geoUtil.geoLocate(this.model.get('place_name'), this.addMarker);
-        } else {
-          this.addMarker([this.model.get('lat'), this.model.get('lng')]);
+        if (this.model.has('district_id')) {
+          // make sure that district is loaded
+          if (appState.districts.get(this.model.get('district_id'))) {
+            vent.trigger('geoLocatePlace:placementStarted', this.model);
+            // district model is ready
+            if (!this.model.hasLocation()) {
+              // try to geocode the location
+              geoUtil.geoLocate(this.model.get('place_name'), this.addMarker);
+            } else {
+              this.addMarker([this.model.get('lat'), this.model.get('lng')]);
+            }
+          } else {
+            // show loading progress bar
+            $("#loading span").text('Nahrávám hranice městské části...');
+            $("#loading").show();
+            // fetch the district
+            appState.districts.add([{id: this.model.get('district_id')}]);
+            appState.districts
+              .get(this.model.get('district_id'))
+              .fetch({success: this.districtLoaded});
+          }
         }
 
         return this;
+      },
+      districtLoaded: function() {
+        // hide loading progress bar
+        $("#loading").hide();
+        // run render
+        this.render();
       },
       addMarker: function(loc) {
         var icon;
@@ -112,7 +134,7 @@ define([
           reset:this.updateFilter,
           change:this.updateFilter
         });
-        vent.on('geoLocatePlace:placementStarted', this.disableMenu);
+        vent.on('geoLocatePlace:initialize', this.disableMenu);
         vent.on('geoLocatePlace:placementFinished', this.enableMenu);
         vent.on('geoLocatePlace:placementCanceled', this.enableMenu);
       },
@@ -174,7 +196,7 @@ define([
           reset:this.updateFilter,
           request:this.showLoading
         });
-        vent.on('geoLocatePlace:placementStarted', this.removeMarkers);
+        vent.on('geoLocatePlace:initialize', this.removeMarkers);
         vent.on('geoLocatePlace:placementCanceled', this.render);
         appState.filterDate.on('change', this.updateFilter);
         appState.places.on('change', this.updateFilter);
@@ -284,7 +306,7 @@ define([
           .appendTo(this.$el);
 
         // disable / enable filter on unknown place location
-        vent.on('geoLocatePlace:placementStarted', this.disableFilter);
+        vent.on('geoLocatePlace:initialize', this.disableFilter);
         vent.on('geoLocatePlace:placementCanceled', this.enableFilter);
         vent.on('geoLocatePlace:placementFinished', this.enableFilter);
 
@@ -425,10 +447,6 @@ define([
             // district model already in the collection
             this.model = appState.districts.get(place.get('district_id'));
             this.render();
-          } else {
-            appState.districts.add([{id: place.get('district_id')}]);
-            this.model = appState.districts.get(place.get('district_id'));
-            this.model.fetch({success: this.render});
           }
         }
       },
