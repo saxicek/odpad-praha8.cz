@@ -158,6 +158,7 @@ define([
       initialize:function () {
         _.bindAll(this, 'render', 'removeMarkers', 'updateFilter', 'updateMarkerBindings', 'movePlace');
 
+        this.popupTpl = _.template($('#popupTemplate').html());
         this.filteredModel = new collection.Containers();
         this.filteredModel.on('reset', this.render);
         this.model.on({
@@ -174,7 +175,8 @@ define([
       render:function () {
         var
           updateMarkerBindings = this.updateMarkerBindings,
-          markerLayers = this.markerLayers
+          markerLayers = this.markerLayers,
+          popupTpl = this.popupTpl
         ;
 
         $("#loading").hide();
@@ -190,7 +192,8 @@ define([
             place = appState.places.get(m.get('place_id')),
             marker,
             label,
-            icon;
+            icon,
+            popup;
           // check that we have configuration for given container type
           if (config.containerTypes[m.get('container_type')]) {
             label = config.containerTypes[m.get('container_type')].label;
@@ -207,10 +210,13 @@ define([
             map.addLayer(markerLayers[label]);
             mapLayer.control.addOverlay(markerLayers[label], label);
           }
+          popup = popupTpl({
+            place_name: place.get('place_name'),
+            time_from: moment(m.get('time_from')).tz('Europe/Prague').format('H:mm'),
+            time_to: moment(m.get('time_to')).tz('Europe/Prague').format('H:mm')
+          });
           marker = L.marker({lat:place.get('lat'), lng:place.get('lng')}, {icon: icon})
-            .bindPopup('<div class="text-center containers-edit"><strong>' + place.get('place_name') + '</strong><br />' +
-            '<span>' + moment(m.get('time_from')).tz('Europe/Prague').format('H:mm') + ' - ' + moment(m.get('time_to')).tz('Europe/Prague').format('H:mm') + '</span>' +
-            '<a class="btn btn-link btn-xs movePlaceButton" href="#"><span class="glyphicon glyphicon-pencil"></span></a></div> ', {closeButton:false})
+            .bindPopup(popup, {closeButton:false})
             .on('popupopen', updateMarkerBindings);
           markerLayers[label].addLayer(marker);
         });
