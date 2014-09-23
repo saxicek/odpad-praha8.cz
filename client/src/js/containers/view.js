@@ -58,7 +58,6 @@ define([
       },
       placementStart: function(district_name) {
         vent.trigger('geoLocatePlace:placementStarted', this.model);
-        district_name = district_name || config.defaultDistrictName;
         if (!this.model.hasLocation()) {
           // try to geocode the location
           geoUtil.geoLocate(this.model.get('place_name'), district_name, this.addMarker);

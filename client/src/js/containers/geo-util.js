@@ -14,6 +14,7 @@ define([
 
     // simplifies place name for geocoder to get better results
     locationAddress = function(place_name, district_name) {
+      district_name = district_name || config.defaultDistrictName;
       return place_name
         .split('x ', 1)[0]
         .split('(', 1)[0]
