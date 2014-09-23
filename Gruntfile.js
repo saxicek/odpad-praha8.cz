@@ -54,9 +54,9 @@ module.exports = function(grunt) {
     },
     requirejs: {
       options: {
-        baseUrl: 'src/js',
-        mainConfigFile: 'src/js/containers.js',
-        name: '../../bower_components/requirejs/require',
+        baseUrl: 'client/src/js',
+        mainConfigFile: 'client/src/js/containers.js',
+        name: '../../../bower_components/requirejs/require',
         include: 'containers',
         out: 'static/js/containers.js',
         wrap: true
@@ -94,7 +94,7 @@ module.exports = function(grunt) {
       },
       client: {
         files: [
-          'src/js/**/*.js'
+          'client/src/js/**/*.js'
         ],
         tasks: [
           'jshint:client',
@@ -117,7 +117,7 @@ module.exports = function(grunt) {
         'server.js'
       ],
       client: [
-        'src/js/**/*.js'
+        'client/src/js/**/*.js'
       ],
       configFiles: [
         'Gruntfile.js',
