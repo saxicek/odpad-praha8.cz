@@ -13,19 +13,19 @@ define([
     geocoder = new gmaps.Geocoder(),
 
     // simplifies place name for geocoder to get better results
-    locationAddress = function(place_name) {
+    locationAddress = function(place_name, district_name) {
       return place_name
         .split('x ', 1)[0]
         .split('(', 1)[0]
-        .trim() + ', Praha 8';
+        .trim() + ', ' + district_name;
     },
 
     // geocodes location
     // place_name - string specifying location
     // cb - callback function which is called when location is determined;
     //      called with one parameter - array [lat, lng]
-    geoLocate = function(place_name, cb) {
-      geocoder.geocode({'address': locationAddress(place_name)}, function(data, status) {
+    geoLocate = function(place_name, district_name, cb) {
+      geocoder.geocode({'address': locationAddress(place_name, district_name)}, function(data, status) {
         if (status == gmaps.GeocoderStatus.OK && data[0].geometry.location_type != gmaps.GeocoderLocationType.APPROXIMATE) {
           cb([data[0].geometry.location.lat(), data[0].geometry.location.lng()]);
         } else {

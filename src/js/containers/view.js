@@ -33,17 +33,13 @@ define([
         vent.trigger('geoLocatePlace:initialize', this.model);
       },
       render: function() {
+        var district;
         if (this.model.has('district_id')) {
           // make sure that district is loaded
-          if (appState.districts.get(this.model.get('district_id'))) {
-            vent.trigger('geoLocatePlace:placementStarted', this.model);
+          district = appState.districts.get(this.model.get('district_id'));
+          if (district) {
             // district model is ready
-            if (!this.model.hasLocation()) {
-              // try to geocode the location
-              geoUtil.geoLocate(this.model.get('place_name'), this.addMarker);
-            } else {
-              this.addMarker([this.model.get('lat'), this.model.get('lng')]);
-            }
+            this.placementStart(district.get('properties').district_name);
           } else {
             // show loading progress bar
             $("#loading span").text('Nahrávám hranice městské části...');
@@ -54,9 +50,21 @@ define([
               .get(this.model.get('district_id'))
               .fetch({success: this.districtLoaded});
           }
+        } else {
+          this.placementStart();
         }
 
         return this;
+      },
+      placementStart: function(district_name) {
+        vent.trigger('geoLocatePlace:placementStarted', this.model);
+        district_name = district_name || config.defaultDistrictName;
+        if (!this.model.hasLocation()) {
+          // try to geocode the location
+          geoUtil.geoLocate(this.model.get('place_name'), district_name, this.addMarker);
+        } else {
+          this.addMarker([this.model.get('lat'), this.model.get('lng')]);
+        }
       },
       districtLoaded: function() {
         // hide loading progress bar

@@ -12,6 +12,7 @@ define(function () {
       minLng: 14.2245,
       maxLng: 14.7069
     },
+    defaultDistrictName: 'Praha',
     // big screen detection
     bigScreen: (document.body.clientWidth > 767),
     containerTypes: {
