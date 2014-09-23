@@ -27,6 +27,8 @@ define([
           'updateMarkerBindings', 'unknownPlaced', 'unknownNotPlaced',
           'saveLoc');
 
+        this.popupTpl = _.template($('#locatePopupTemplate').html());
+
         //clear pins on the map
         vent.trigger('geoLocatePlace:placementStarted', this.model);
       },
@@ -43,7 +45,7 @@ define([
       addMarker: function(loc) {
         // add pin and show info message
         this.marker = L.marker(loc, {draggable:true})
-          .bindPopup('<p>Umístěte mne na místo ' + this.model.get('place_name') + '</p></div><button id="setPlaceOkButton" type="button" class="btn btn-primary btn-sm btn-block"">Hotovo</button><button id="setPlaceCancelButton" type="button" class="btn btn-link btn-sm btn-block"">Zrušit</button>', {closeButton:false})
+          .bindPopup(this.popupTpl({place_name: this.model.get('place_name')}), {closeButton:false})
           .on('dragstart', this.saveLoc)
           .on('dragend', this.afterMarkerDrag)
           .on('popupopen', this.updateMarkerBindings)
