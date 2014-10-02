@@ -12,11 +12,18 @@ var
   emitter      = new EventEmitter()
   ;
 
+// Create a new object, that prototypally inherits from the Error constructor.
+function ScrapeSkipError(message) {
+  this.name = "ScrapeSkipError";
+  this.message = message || "Scrape skipped!";
+}
+ScrapeSkipError.prototype = new Error();
+ScrapeSkipError.prototype.constructor = ScrapeSkipError;
+
 var scraperPrototype = {
   minScrapeInterval: null,
   districtName: null,
   districtId: null,
-  EXCEPTION_SKIP: 'SCRAPER_EXCEPTION_SKIP',
   scrape: function(callback) {
     var
       self = this,
@@ -41,7 +48,7 @@ var scraperPrototype = {
           // check that we don't run too often
           if (res && self.minScrapeInterval && moment().isBefore(moment(res.time_from).add(moment.duration(self.minScrapeInterval)))) {
             // skip the scraping
-            callback(self.EXCEPTION_SKIP);
+            callback(new ScrapeSkipError());
           } else {
             // continue
             callback();
@@ -147,14 +154,14 @@ var scraperPrototype = {
       if (err) {
         // update scrape status in DB
         if (scrapeId) {
-          if (err == self.EXCEPTION_SKIP) {
-            db.scrapeSkipped(scrapeId, err, function(err) {
+          if (err instanceof ScrapeSkipError) {
+            db.scrapeSkipped(scrapeId, err.message, function(err) {
               if (err) self.error('Cannot update scraper status to skipped', err);
               self.info('Scrape skipped!');
             });
           } else {
-            db.scrapeError(scrapeId, err, function(err) {
-              if (err) self.error('Cannot update scraper status to error', err);
+            db.scrapeError(scrapeId, err.message, function(e) {
+              if (e) self.error('Cannot update scraper status to error', e);
               self.error('Scrape finished with error!', err);
             });
           }
