@@ -11,6 +11,7 @@
 
     <!-- Core CSS -->
     <link href="http://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" rel="stylesheet" type="text/css">
+    <link href="/css/containers.css" rel="stylesheet" type="text/css">
 </head>
 
 <body>
@@ -35,7 +36,12 @@
                     {{?}}
                 </td>
                 <td>{{=value.suc_duration_str}}</td>
-                <td>{{=value.err_time_from_str}}</td>
+                <td>
+                    {{=value.err_time_from_str}}
+                    {{? value.err_message }}
+                    <span class="glyphicon glyphicon-exclamation-sign icon-danger" title="{{=value.err_message}}"></span>
+                    {{?}}
+                </td>
                 <td>{{=value.err_duration_str}}</td>
             </tr>
             {{~}}

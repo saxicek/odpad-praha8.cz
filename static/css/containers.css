@@ -35,3 +35,8 @@
 .legend-label {
     padding-top: 14px;
 }
+
+/* Scraper status page */
+.icon-danger {
+    color: #d9534f;
+}
