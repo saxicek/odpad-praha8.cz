@@ -36,6 +36,20 @@ describe('util', function() {
       });
     });
 
+    it('should parse valid input', function() {
+      expect(util.parseDate('31.12.2014', '13.00-17.00 hod.')).to.eql({
+        'time_from': new Date(2014, 11, 31, 13, 0),
+        'time_to': new Date(2014, 11, 31, 17, 0)
+      });
+    });
+
+    it('should parse input with space in time interval', function() {
+      expect(util.parseDate('31.12.2014', '13.00 -17.00 hod.')).to.eql({
+        'time_from': new Date(2014, 11, 31, 13, 0),
+        'time_to': new Date(2014, 11, 31, 17, 0)
+      });
+    });
+
     after(function() {
       this.clock.restore();
     });
@@ -73,5 +87,21 @@ describe('util', function() {
       this.clock.restore();
     });
   });
-});
 
+  describe('splitDateList()', function() {
+    it('should expose a function', function () {
+      expect(util.splitDateList).to.be.a('function');
+    });
+
+    it('should parse valid input', function() {
+      expect(util.splitDateList('17.03., 28.04., 07.07., 15.09., 27.10.2014')).to.eql([
+        '17.03.2014',
+        '28.04.2014',
+        '07.07.2014',
+        '15.09.2014',
+        '27.10.2014'
+      ]);
+    });
+  });
+
+});
