@@ -25,8 +25,14 @@ define(['geo-util'], function(geoUtil) {
       it('should intelligently fix typos', function() {
         geoUtil.locationAddress('Kandertovax Lindnerova').should.equal('Kandertova, Praha');
       });
-      it('should use district name when passed', function() {
+      it('should use district name if passed', function() {
         geoUtil.locationAddress('Kandertovax Lindnerova', 'Praha 8').should.equal('Kandertova, Praha 8');
+      });
+      it('should remove any additional information', function() {
+        geoUtil.locationAddress('ul. Opálkova (u autobazaru)').should.equal('Opálkova, Praha');
+      });
+      it('should remove any additional information', function() {
+        geoUtil.locationAddress('křižovatka ul. Drahanská – Chlumínská').should.equal('Drahanská, Praha');
       });
     });
 

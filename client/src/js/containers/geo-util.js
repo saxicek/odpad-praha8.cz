@@ -18,6 +18,10 @@ define([
       return place_name
         .split('x ', 1)[0]
         .split('(', 1)[0]
+        .split(' - ', 1)[0]
+        .split(' – ', 1)[0] // EN DASH character
+        .replace('křižovatka ', '')
+        .replace('ul. ', '')
         .trim() + ', ' + district_name;
     },
 
