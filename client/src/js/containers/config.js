@@ -42,7 +42,7 @@ define(function () {
           prefix: 'fa',
           markerColor: 'red'
         },
-        allowed: 'baterie, akumulátory,nádoby od sprejů, zahradní chemie, mazací oleje a tuky, ředidla a barvy, léky a teploměry, kyseliny a hydroxidy, lepidla a pryskyřice, detergenty (odmašťovací přípravky), fotochemikálie, pesticidy (přípravky na hubení hmyzu, hlodavců, plevelu, odstraňování plísní), zářivky a výbojky'
+        allowed: 'baterie, akumulátory, nádoby od sprejů, zahradní chemie, mazací oleje a tuky, ředidla a barvy, léky a teploměry, kyseliny a hydroxidy, lepidla a pryskyřice, detergenty (odmašťovací přípravky), fotochemikálie, pesticidy (přípravky na hubení hmyzu, hlodavců, plevelu, odstraňování plísní), zářivky a výbojky'
       },
       "TEXTILE": {
         label: 'Textil',
