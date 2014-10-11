@@ -22,6 +22,7 @@ app.use(restify.queryParser());
 app.use(restify.bodyParser());
 app.use(restify.CORS());
 app.use(restify.fullResponse());
+app.use(restify.gzipResponse());
 
 // evaluate templates
 var
