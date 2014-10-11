@@ -93,4 +93,35 @@ describe('server', function() {
       });
     });
   });
+
+  describe('/robots.txt', function() {
+    it('should return a 200 response', function(done) {
+      client.get('/robots.txt', function(err, req, res) {
+        expect(res.statusCode).to.equal(200);
+        done();
+      });
+    });
+    it('should return correct content type', function(done) {
+      client.get('/robots.txt', function(err, req, res) {
+        expect(res.headers['content-type']).to.equal('text/plain');
+        done();
+      });
+    });
+  });
+
+  describe('/sitemap.xml', function() {
+    it('should return a 200 response', function(done) {
+      client.get('/sitemap.xml', function(err, req, res) {
+        expect(res.statusCode).to.equal(200);
+        done();
+      });
+    });
+    it('should return correct content type', function(done) {
+      client.get('/sitemap.xml', function(err, req, res) {
+        expect(res.headers['content-type']).to.equal('application/xml');
+        done();
+      });
+    });
+  });
+
 });

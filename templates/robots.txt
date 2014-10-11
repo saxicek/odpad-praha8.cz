@@ -1,0 +1,4 @@
+Sitemap: {{=it.siteUrl}}/sitemap.xml
+User-agent:*
+ Disallow: /test/
+ Disallow: /container/update

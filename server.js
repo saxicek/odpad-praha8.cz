@@ -133,6 +133,20 @@ app.get('/', function (req, res, next)
 
 app.get(/\/(css|js|img|lib|test)\/?.*/, restify.serveStatic({directory: './static/'}));
 
+app.get('/robots.txt', function (req, res, next)
+{
+  res.status(200);
+  res.header('Content-Type', 'text/plain');
+  res.end(doT.template(fs.readFileSync(__dirname + '/templates/robots.txt').toString())({siteUrl: config.siteUrl}));
+});
+
+app.get('/sitemap.xml', function (req, res, next)
+{
+  res.status(200);
+  res.header('Content-Type', 'application/xml');
+  res.end(doT.template(fs.readFileSync(__dirname + '/templates/sitemap.xml').toString())({siteUrl: config.siteUrl}));
+});
+
 app.listen(config.port, config.ip, function () {
   console.info( "Listening on " + config.ip + ", port " + config.port );
 });
