@@ -104,13 +104,21 @@ module.exports = function(grunt) {
           'jshint:server'
         ]
       },
-      client: {
+      clientJs: {
         files: [
           'client/src/js/**/*.js'
         ],
         tasks: [
           'jshint:client',
           'requirejs:dev'
+        ]
+      },
+      clientCss: {
+        files: [
+          'client/src/css/**/*.css'
+        ],
+        tasks: [
+          'cssmin'
         ]
       },
       clientTest: {
@@ -194,13 +202,24 @@ module.exports = function(grunt) {
       }
     },
     copy: {
-      // copy static files from bower_components to static/lib
+      // copy static files from bower_components
       main: {
         files: [
-          {expand: true, cwd: 'bower_components/leaflet/dist/', src: ['**', '!*.js'], dest: 'static/lib/leaflet', filter: 'isFile'},
-          {expand: true, cwd: 'bower_components/Leaflet.awesome-markers/dist/', src: ['**', '!*.js'], dest: 'static/lib/Leaflet.awesome-markers', filter: 'isFile'},
+          {expand: true, cwd: 'bower_components/leaflet/dist/', src: ['**', '!*.js', '!*.css'], dest: 'static/css', filter: 'isFile'},
+          {expand: true, cwd: 'bower_components/Leaflet.awesome-markers/dist/', src: ['**', '!*.js', '!*.css'], dest: 'static/css', filter: 'isFile'},
           {expand: true, cwd: 'node_modules/mocha/', src: ['*.css'], dest: 'static/test/css', filter: 'isFile'}
         ]
+      }
+    },
+    cssmin: {
+      combine: {
+        files: {
+          'static/css/containers.min.css': [
+            'bower_components/leaflet/dist/leaflet.css',
+            'bower_components/Leaflet.awesome-markers/dist/leaflet.awesome-markers.css',
+            'client/src/css/containers.css'
+          ]
+        }
       }
     }
   });
@@ -216,8 +235,9 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-node-inspector');
   grunt.loadNpmTasks('grunt-bump');
   grunt.loadNpmTasks('grunt-contrib-copy');
+  grunt.loadNpmTasks('grunt-contrib-cssmin');
 
-  grunt.registerTask('build', ['requirejs:prod', 'copy:main']);
+  grunt.registerTask('build', ['requirejs:prod', 'copy:main', 'cssmin']);
   grunt.registerTask('deploy', ['migrate:up']);
   grunt.registerTask('dev', ['concurrent']);
 

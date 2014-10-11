@@ -38,7 +38,8 @@
     "db-migrate": "0.7.1",
     "grunt-db-migrate": "0.2.0",
     "grunt-bump": "0.0.15",
-    "grunt-contrib-copy": "0.6.0"
+    "grunt-contrib-copy": "0.6.0",
+    "grunt-contrib-cssmin": "0.10.0"
   },
   "repository": {
     "type": "git",
