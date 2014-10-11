@@ -124,4 +124,13 @@ describe('server', function() {
     });
   });
 
+  describe('/favicon.ico', function() {
+    it('should return a 200 response', function(done) {
+      client.get('/favicon.ico', function(err, req, res) {
+        expect(res.statusCode).to.equal(200);
+        done();
+      });
+    });
+  });
+
 });

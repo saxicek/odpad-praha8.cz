@@ -128,10 +128,24 @@ app.get('/', function (req, res, next)
 {
   res.status(200);
   res.header('Content-Type', 'text/html');
+  res.header('Content-Language', 'cs');
   res.end(index);
 });
 
 app.get(/\/(css|js|img|lib|test)\/?.*/, restify.serveStatic({directory: './static/'}));
+
+app.get('/favicon.ico', function(req, res, next) {
+  fs.readFile(__dirname + '/static/img/favicon.ico', function(err, file) {
+    if (err) {
+      res.send(500);
+      return next();
+    }
+
+    res.write(file);
+    res.end();
+    return next();
+  });
+});
 
 app.get('/robots.txt', function (req, res, next)
 {
