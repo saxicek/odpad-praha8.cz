@@ -39,7 +39,7 @@ define([
           district = appState.districts.get(this.model.get('district_id'));
           if (district) {
             // district model is ready
-            this.placementStart(district.get('properties').district_name);
+            this.placementStart(district);
           } else {
             // show loading progress bar
             $("#loading span").text('Nahrávám hranice městské části...');
@@ -56,11 +56,11 @@ define([
 
         return this;
       },
-      placementStart: function(district_name) {
+      placementStart: function(district) {
         vent.trigger('geoLocatePlace:placementStarted', this.model);
         if (!this.model.hasLocation()) {
           // try to geocode the location
-          geoUtil.geoLocate(this.model.get('place_name'), district_name, this.addMarker);
+          geoUtil.geoLocate(this.model.get('place_name'), district, this.addMarker);
         } else {
           this.addMarker([this.model.get('lat'), this.model.get('lng')]);
         }

@@ -143,12 +143,13 @@ function find_district_id(district_name, callback) {
 function find_district(district_id, callback) {
   var stmt = "SELECT row_to_json(f) AS json " +
     "         FROM (SELECT 'Feature' AS type " +
-    "                      ,st_asgeojson(d.the_geom) ::json AS geometry " +
+    "                      ,ST_AsGeoJSON(d.the_geom) ::json AS geometry " +
     "                      ,row_to_json(dp) AS properties " +
     "                 FROM district AS d " +
     "                 JOIN (SELECT id " +
     "                             ,district_name " +
     "                             ,description " +
+    "                             ,ST_AsGeoJSON(ST_PointOnSurface(the_geom))::json AS point_on_surface " +
     "                         FROM district) AS dp ON d.id = dp.id " +
     "                WHERE d.id = $1::integer) AS f";
   pg.first(stmt, district_id, callback);

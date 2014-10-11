@@ -27,15 +27,27 @@ define([
 
     // geocodes location
     // place_name - string specifying location
+    // district - model with district
     // cb - callback function which is called when location is determined;
     //      called with one parameter - array [lat, lng]
-    geoLocate = function(place_name, district_name, cb) {
+    geoLocate = function(place_name, district, cb) {
+      var
+        district_name,
+        map_center;
+      if (district) {
+        district_name = district.get('properties').district_name;
+        map_center = district.get('properties').point_on_surface.coordinates.reverse();
+      } else {
+        map_center = config.mapCenter;
+      }
       geocoder.geocode({'address': locationAddress(place_name, district_name)}, function(data, status) {
-        if (status == gmaps.GeocoderStatus.OK && data[0].geometry.location_type != gmaps.GeocoderLocationType.APPROXIMATE) {
+        if (status == gmaps.GeocoderStatus.OK &&
+            data[0].geometry.location_type != gmaps.GeocoderLocationType.APPROXIMATE &&
+            (!('partial_match' in data[0]) || data[0].partial_match !== true)) {
           cb([data[0].geometry.location.lat(), data[0].geometry.location.lng()]);
         } else {
-          // use map center
-          cb(config.mapCenter);
+          // use random point in district or configured map center
+          cb(map_center);
         }
       });
     },
