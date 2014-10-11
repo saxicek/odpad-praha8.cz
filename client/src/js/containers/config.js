@@ -4,7 +4,7 @@ define(function () {
 
   return {
     // set map center
-    mapCenter: [50.11, 14.47],
+    mapCenter: [50.0877078, 14.4211197],
     // Prague borders
     borders: {
       minLat: 49.942,
