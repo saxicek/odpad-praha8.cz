@@ -237,7 +237,7 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-copy');
   grunt.loadNpmTasks('grunt-contrib-cssmin');
 
-  grunt.registerTask('build', ['requirejs:prod', 'copy:main', 'cssmin']);
+  grunt.registerTask('build', ['requirejs:prod', 'requirejs:test', 'copy:main', 'cssmin']);
   grunt.registerTask('deploy', ['migrate:up']);
   grunt.registerTask('dev', ['concurrent']);
 
