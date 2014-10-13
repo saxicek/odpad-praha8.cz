@@ -56,6 +56,13 @@ describe('server', function() {
         done();
       });
     });
+    it('should support gzip', function(done) {
+      client.get({path: '/', headers: {'accept-encoding': 'gzip'}}, function(err, req, res) {
+        expect(res.statusCode).to.equal(200);
+        expect(res.headers['content-encoding']).to.equal('gzip');
+        done();
+      });
+    });
   });
 
   describe('/place/:id', function() {
