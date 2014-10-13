@@ -39,6 +39,7 @@ app.get('/container/update', function (req, res, next) {
   // forcibly run scraper update
   scraper.scrape();
   res.send({status: 'ok'});
+  return next();
 });
 
 app.get('/place', db.getPlaces);
@@ -66,6 +67,7 @@ app.put('/place/:id', function (req, res, next) {
 app.get('/status', function (req, res, next)
 {
   res.send({status: 'ok'});
+  return next();
 });
 
 app.get('/status/scrape', function (req, res, next) {
@@ -153,6 +155,7 @@ app.get('/robots.txt', function (req, res, next)
   res.status(200);
   res.header('Content-Type', 'text/plain');
   res.end(doT.template(fs.readFileSync(__dirname + '/templates/robots.txt').toString())({siteUrl: config.siteUrl}));
+  return next();
 });
 
 app.get('/sitemap.xml', function (req, res, next)
@@ -160,6 +163,7 @@ app.get('/sitemap.xml', function (req, res, next)
   res.status(200);
   res.header('Content-Type', 'application/xml');
   res.end(doT.template(fs.readFileSync(__dirname + '/templates/sitemap.xml').toString())({siteUrl: config.siteUrl}));
+  return next();
 });
 
 app.listen(config.port, config.ip, function () {
