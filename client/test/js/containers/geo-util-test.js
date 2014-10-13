@@ -34,6 +34,9 @@ define(['geo-util'], function(geoUtil) {
       it('should remove any additional information', function() {
         geoUtil.locationAddress('křižovatka ul. Drahanská – Chlumínská').should.equal('Drahanská, Praha');
       });
+      it('should remove &nbsp;', function() {
+        geoUtil.locationAddress('křižovatka ul.&nbsp;Ke&nbsp;Stírce – Pod&nbsp;Statky').should.equal('Ke Stírce, Praha');
+      });
     });
 
   });
