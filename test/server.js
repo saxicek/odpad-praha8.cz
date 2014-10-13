@@ -63,6 +63,18 @@ describe('server', function() {
         done();
       });
     });
+    it('should use containers.min.js in normal mode', function(done) {
+      client.get('/', function(err, req, res) {
+        expect(res.body).to.contain('containers.min.js');
+        done();
+      });
+    });
+    it('should use containers.js in debug mode', function(done) {
+      client.get('/?debug', function(err, req, res) {
+        expect(res.body).to.contain('containers.js');
+        done();
+      });
+    });
   });
 
   describe('/place/:id', function() {

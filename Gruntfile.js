@@ -58,13 +58,16 @@ module.exports = function(grunt) {
         mainConfigFile: 'client/src/js/containers.js',
         name: '../../../bower_components/requirejs/require',
         include: 'containers',
-        out: 'static/js/containers.js',
         wrap: true
       },
       prod: {
+        options: {
+          out: 'static/js/containers.min.js'
+        }
       },
       dev: {
         options: {
+          out: 'static/js/containers.js',
           optimize: 'none'
         }
       },
@@ -237,7 +240,7 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-copy');
   grunt.loadNpmTasks('grunt-contrib-cssmin');
 
-  grunt.registerTask('build', ['requirejs:prod', 'requirejs:test', 'copy:main', 'cssmin']);
+  grunt.registerTask('build', ['requirejs', 'copy', 'cssmin']);
   grunt.registerTask('deploy', ['migrate:up']);
   grunt.registerTask('dev', ['concurrent']);
 

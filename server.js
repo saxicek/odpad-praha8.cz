@@ -26,7 +26,7 @@ app.use(restify.gzipResponse());
 
 // evaluate templates
 var
-  index = doT.template(fs.readFileSync(__dirname + '/templates/index.html').toString())({version: pjson.version}),
+  index = doT.template(fs.readFileSync(__dirname + '/templates/index.html').toString()),
   scrape_status = doT.template(fs.readFileSync(__dirname + '/templates/scrape_status.html').toString());
 
 // Routes
@@ -129,10 +129,12 @@ app.use(restify.conditionalRequest());
 
 app.get('/', function (req, res, next)
 {
+  var debug = 'debug' in req.params;
   res.status(200);
   res.header('Content-Type', 'text/html');
   res.header('Content-Language', 'cs');
-  res.end(index);
+  res.end(index({version: pjson.version, debug: debug}));
+  return next();
 });
 
 app.get(/\/(css|js|img|lib|test)\/?.*/, restify.serveStatic({directory: './static/'}));
