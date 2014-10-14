@@ -17,6 +17,7 @@ define([
     }),
 
     Districts = Backbone.Collection.extend({
+      model: model.District,
       url: '/district'
     })
   ;

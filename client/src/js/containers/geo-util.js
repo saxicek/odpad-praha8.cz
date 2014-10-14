@@ -37,7 +37,7 @@ define([
         map_center;
       if (district) {
         district_name = district.get('properties').district_name;
-        map_center = district.get('properties').point_on_surface.coordinates.reverse();
+        map_center = district.getCenter();
       } else {
         map_center = config.mapCenter;
       }
