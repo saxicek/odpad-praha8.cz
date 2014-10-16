@@ -72,7 +72,7 @@ var scraperPrototype = {
           callback();
         }
       },
-      self.fetchUrl,
+      self.fetchUrl.bind(self),
       // check response status code
       function(response, body, callback) {
         if (response.statusCode != 200) {
@@ -247,7 +247,7 @@ var scraperPrototype = {
   },
   // fetch scraper URL
   fetchUrl: function(callback) {
-    this.info('Fetching the page ' + self.url);
+    this.info('Fetching the page ' + this.url);
     request.get(this.url, callback);
   }
 
