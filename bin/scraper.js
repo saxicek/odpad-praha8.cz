@@ -72,11 +72,7 @@ var scraperPrototype = {
           callback();
         }
       },
-      // fetch scraper URL
-      function(callback) {
-        self.info('Fetching the page ' + self.url);
-        request.get(self.url, callback);
-      },
+      self.fetchUrl,
       // check response status code
       function(response, body, callback) {
         if (response.statusCode != 200) {
@@ -117,8 +113,8 @@ var scraperPrototype = {
 
             for (var container_type in reducedContainers) {
               if (reducedContainers.hasOwnProperty(container_type)) {
-              reducedContainers[container_type]
-                .forEach(flatten);
+                reducedContainers[container_type]
+                  .forEach(flatten);
               }
             }
             // add places
@@ -158,28 +154,32 @@ var scraperPrototype = {
             db.scrapeSkipped(scrapeId, err.message, function(err) {
               if (err) self.error('Cannot update scraper status to skipped', err);
               self.info('Scrape skipped!');
+              callback();
             });
           } else {
             db.scrapeError(scrapeId, err.message, function(e) {
               if (e) self.error('Cannot update scraper status to error', e);
               self.error('Scrape finished with error!', err);
+              callback();
             });
           }
         } else {
           // log error to console
           self.error('Scrape finished with error!', err);
+          callback();
         }
       } else {
         if (scrapeId) {
           db.scrapeSuccess(scrapeId, JSON.stringify(result), function(err) {
             if (err) self.error('Cannot update scraper status to success', err);
             self.info('Scrape finished successfully!');
+            callback();
           });
         } else {
           self.error('Scrape finished successfully but no scrape id was set!', err);
+          callback();
         }
       }
-      callback();
     });
   },
   info: function(message) {
@@ -239,7 +239,13 @@ var scraperPrototype = {
         }
       }
     ], callback);
+  },
+  // fetch scraper URL
+  fetchUrl: function(callback) {
+    this.info('Fetching the page ' + self.url);
+    request.get(this.url, callback);
   }
+
 };
 
 function createScraper(name) {
