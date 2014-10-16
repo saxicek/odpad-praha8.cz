@@ -83,7 +83,12 @@ var scraperPrototype = {
       // parse data
       function(body, callback) {
         self.info('Loading the page');
-        self.parse(body, callback);
+        try {
+          self.parse(body, callback);
+        }
+        catch (err) {
+          callback(err);
+        }
       },
       // import data to DB
       function(containers, callback) {

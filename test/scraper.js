@@ -49,12 +49,17 @@ describe('scraper', function() {
   });
 
   describe('scrape()', function() {
-    var scraper_name = 'test_scraper_parse_error';
+    var
+      scraper_name_err = 'test_scraper_parse_error',
+      scraper_name_exc = 'test_scraper_parse_exception';
     before(function(done) {
       // delete previous scrape logs
-      db.pg('DELETE FROM scrape_status WHERE scraper_name = $1::text;', [scraper_name], function(err) {
+      db.pg('DELETE FROM scrape_status WHERE scraper_name = $1::text;', [scraper_name_err], function(err) {
         if(err) return done(err);
-        done();
+        db.pg('DELETE FROM scrape_status WHERE scraper_name = $1::text;', [scraper_name_exc], function(err) {
+          if(err) return done(err);
+          done();
+        });
       });
     });
 
@@ -64,14 +69,31 @@ describe('scraper', function() {
 
     it('should log parse errors', function (done) {
       var
-        s = scraper.createScraper(scraper_name);
+        s = scraper.createScraper(scraper_name_err);
       // disable url fetch
       s.fetchUrl = function(cb) { cb(null, { statusCode: 200 }, null); };
       // parse returns error
       s.parse = function(body, cb) { return cb(new Error('parse_error')); };
       s.scrape(function () {
         // check if scraping was skipped
-        db.findLastScrape(scraper_name, db.SCRAPE_STATUS_ERROR, function(err, res) {
+        db.findLastScrape(scraper_name_err, db.SCRAPE_STATUS_ERROR, function(err, res) {
+          if (err) return done(err);
+          expect(res.time_from).not.to.be.null;
+          done();
+        });
+      });
+    });
+
+    it('should log parse exceptions', function (done) {
+      var
+        s = scraper.createScraper(scraper_name_exc);
+      // disable url fetch
+      s.fetchUrl = function(cb) { cb(null, { statusCode: 200 }, null); };
+      // parse returns error
+      s.parse = function(body, cb) { throw new Error('parse_exception'); };
+      s.scrape(function () {
+        // check if scraping was skipped
+        db.findLastScrape(scraper_name_exc, db.SCRAPE_STATUS_ERROR, function(err, res) {
           if (err) return done(err);
           expect(res.time_from).not.to.be.null;
           done();
