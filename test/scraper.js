@@ -1,3 +1,6 @@
+/* Disable Chai Expect jshint errors: https://github.com/chaijs/chai/issues/41 */
+/* jshint -W024 */
+/* jshint expr:true */
 var expect  = require('chai').expect,
     scraper = require('../bin/scraper.js'),
     db      = require('../bin/db.js');
