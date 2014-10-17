@@ -36,7 +36,11 @@ function parse_date(date, time) {
   if (!date) {
     console.error('Missing date!');
     return;
-  } else if (date.search(/^\d{1,2}\.\d{1,2}\.$/) != -1) {
+  }
+  // remove spaces
+  date = date.replace(' ', '');
+
+  if (date.search(/^\d{1,2}\.\d{1,2}\.$/) != -1) {
     // expecting date format '31.12.'
     date_fields = date_without_year(date);
   } else if (date.search(/^\d{1,2}\.\d{1,2}\.\d{4}$/) != -1) {

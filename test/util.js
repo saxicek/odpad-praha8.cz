@@ -50,6 +50,13 @@ describe('util', function() {
       });
     });
 
+    it('should parse input with space in date', function() {
+      expect(util.parseDate('31. 12.', '13.00-17.00 hod.')).to.eql({
+        'time_from': new Date(2012, 11, 31, 13, 0),
+        'time_to': new Date(2012, 11, 31, 17, 0)
+      });
+    });
+
     after(function() {
       this.clock.restore();
     });
