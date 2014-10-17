@@ -162,16 +162,13 @@ module.exports = function(grunt) {
     },
     // Configure a mochaTest task
     mochaTest: {
+      options: {
+        reporter: 'spec'
+      },
       server: {
-        options: {
-          reporter: 'spec'
-        },
         src: ['test/*.js']
       },
       scrapers: {
-        options: {
-          reporter: 'spec'
-        },
         src: ['test/scrapers/*.js']
       }
     },
