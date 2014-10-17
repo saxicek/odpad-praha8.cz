@@ -15,16 +15,17 @@ describe('scraper', function() {
   });
 
   describe('createScraper()', function() {
-    var lastSuccess = null;
+    var
+      lastSuccess = null,
+      scraper_name = 'test_scraper';
 
     before(function(done) {
       // create successful scrape
-      db.addScrape('test_scraper', function(err, res) {
+      var stmt = "INSERT INTO scrape_status (scraper_name, status, time_to) VALUES ($1::text, $2::text, CURRENT_TIMESTAMP) RETURNING time_from;";
+      db.pg.first(stmt, [scraper_name, db.SCRAPE_STATUS_SUCCESS], function(err, res) {
         if (err) return done(err);
-        db.scrapeSuccess(res[0].id, 'Test', function(err) {
-          lastSuccess = new Date();
-          done(err);
-        });
+        lastSuccess = res.time_from;
+        done();
       });
     });
 
@@ -33,15 +34,15 @@ describe('scraper', function() {
     });
 
     it('should return scraper instance', function () {
-      expect(scraper.createScraper('test_scraper')).to.be.an('object');
+      expect(scraper.createScraper(scraper_name)).to.be.an('object');
     });
 
     it('should not scrape too often', function (done) {
-      var s = scraper.createScraper('test_scraper');
+      var s = scraper.createScraper(scraper_name);
       s.minScrapeInterval = '24:00:00';
       s.scrape(function () {
         // check if scraping was skipped
-        db.findLastScrape('test_scraper', db.SCRAPE_STATUS_SKIPPED, function(err, res) {
+        db.findLastScrape(scraper_name, db.SCRAPE_STATUS_SKIPPED, function(err, res) {
           if (err) return done(err);
           expect(res.time_from).to.be.greaterThan(lastSuccess);
           done();
