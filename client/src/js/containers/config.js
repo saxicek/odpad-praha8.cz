@@ -67,7 +67,7 @@ define(function () {
       "MOBILE_WASTE_COLLECTION_YARD": {
         label: 'Mobilní sběrný dvůr',
         icon: {
-          icon: 'home',
+          icon: 'truck',
           prefix: 'fa',
           markerColor: 'cadetblue'
         },
