@@ -2,6 +2,7 @@
 /* jshint -W024 */
 /* jshint expr:true */
 var expect  = require('chai').expect,
+    async   = require('async'),
     scraper = require('../bin/scraper.js'),
     db      = require('../bin/db.js');
 
@@ -54,17 +55,21 @@ describe('scraper', function() {
 
   describe('scrape()', function() {
     var
-      scraper_name_err = 'test_scraper_parse_error',
-      scraper_name_exc = 'test_scraper_parse_exception';
+      scraper_name = {
+        parse_error: 'test_scraper_parse_error',
+        parse_exception: 'test_scraper_parse_exception',
+        empty_parse: 'test_scraper_empty_parse'
+      };
+
     before(function(done) {
       // delete previous scrape logs
-      db.pg('DELETE FROM scrape_status WHERE scraper_name = $1::text;', [scraper_name_err], function(err) {
-        if(err) return done(err);
-        db.pg('DELETE FROM scrape_status WHERE scraper_name = $1::text;', [scraper_name_exc], function(err) {
-          if(err) return done(err);
-          done();
-        });
-      });
+      var scraper_names_list = [];
+      for(var name in scraper_name) {
+        if (scraper_name.hasOwnProperty(name)) scraper_names_list.push(scraper_name[name]);
+      }
+      async.eachSeries(scraper_names_list, function(name, callback) {
+        db.pg('DELETE FROM scrape_status WHERE scraper_name = $1::text;', [name], callback);
+      }, done);
     });
 
     it('should expose a function', function () {
@@ -73,14 +78,14 @@ describe('scraper', function() {
 
     it('should log parse errors', function (done) {
       var
-        s = scraper.createScraper(scraper_name_err);
+        s = scraper.createScraper(scraper_name.parse_error);
       // disable url fetch
       s.fetchUrl = function(cb) { cb(null, { statusCode: 200 }, null); };
       // parse returns error
       s.parse = function(body, cb) { return cb(new Error('parse_error')); };
       s.scrape(function () {
         // check if scraping was skipped
-        db.findLastScrape(scraper_name_err, db.SCRAPE_STATUS_ERROR, function(err, res) {
+        db.findLastScrape(scraper_name.parse_error, db.SCRAPE_STATUS_ERROR, function(err, res) {
           if (err) return done(err);
           expect(res.time_from).not.to.be.null;
           done();
@@ -90,14 +95,31 @@ describe('scraper', function() {
 
     it('should log parse exceptions', function (done) {
       var
-        s = scraper.createScraper(scraper_name_exc);
+        s = scraper.createScraper(scraper_name.parse_exception);
       // disable url fetch
       s.fetchUrl = function(cb) { cb(null, { statusCode: 200 }, null); };
       // parse returns error
       s.parse = function(body, cb) { throw new Error('parse_exception'); };
       s.scrape(function () {
         // check if scraping was skipped
-        db.findLastScrape(scraper_name_exc, db.SCRAPE_STATUS_ERROR, function(err, res) {
+        db.findLastScrape(scraper_name.parse_exception, db.SCRAPE_STATUS_ERROR, function(err, res) {
+          if (err) return done(err);
+          expect(res.time_from).not.to.be.null;
+          done();
+        });
+      });
+    });
+
+    it('should support empty parse result', function (done) {
+      var
+        s = scraper.createScraper(scraper_name.empty_parse);
+      // disable url fetch
+      s.fetchUrl = function(cb) { cb(null, { statusCode: 200 }, null); };
+      // parse returns error
+      s.parse = function(body, cb) { return cb(null, []); };
+      s.scrape(function () {
+        // check if scraping was successful
+        db.findLastScrape(scraper_name.empty_parse, db.SCRAPE_STATUS_SUCCESS, function(err, res) {
           if (err) return done(err);
           expect(res.time_from).not.to.be.null;
           done();

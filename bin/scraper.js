@@ -92,6 +92,10 @@ var scraperPrototype = {
       },
       // import data to DB
       function(containers, callback) {
+        if (!containers || containers.length === 0) {
+          self.info('No data to be inserted to DB');
+          return callback(null, { parsed: 0, inserted: 0 });
+        }
         self.info('Inserting data to DB');
         async.series({
           // add places
