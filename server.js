@@ -9,12 +9,6 @@ var config      = require('config'),
 
 // set Czech locale for Moment.js
 moment.locale('cs');
-// fix stupid time format
-moment.locale('cs', {
-  longDateFormat : {
-    LT: "H:mm"
-  }
-});
 
 var app         = restify.createServer();
 
