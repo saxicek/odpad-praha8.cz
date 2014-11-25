@@ -38,7 +38,7 @@
                 <td>{{=value.suc_duration_str}}</td>
                 <td>
                     {{=value.err_time_from_str}}
-                    {{? value.err_message }}
+                    {{? value.err_message && value.err_time_from > value.suc_time_from }}
                     <span class="glyphicon glyphicon-exclamation-sign icon-danger" title="{{=value.err_message}}"></span>
                     {{?}}
                 </td>
