@@ -122,14 +122,23 @@
     <div class="panel panel-default">
         <div class="panel-heading">
             <h4 class="panel-title">
-                <a data-toggle="collapse" data-parent="#legendItems" href="#<% if (allowed || forbidden) print('LEGEND_'+type); %>">
+                <% if (allowed || forbidden) { %>
+                <a data-toggle="collapse" data-parent="#legendItems" href="#LEGEND_<%= type %>">
                     <div class="row">
                         <div class="col-xs-1 icon-marker"></div>
-                        <div class="col-xs-11 legend-label"><%= label %></div>
+                        <div class="col-xs-10 legend-label"><%= label %></div>
+                        <div class="col-xs-1 legend-label"><span class="glyphicon glyphicon-chevron-down" aria-hidden="true"></span></div>
                     </div>
                 </a>
+                <% } else { %>
+                <div class="row">
+                    <div class="col-xs-1 icon-marker"></div>
+                    <div class="col-xs-11 legend-label"><%= label %></div>
+                </div>
+                <% } %>
             </h4>
         </div>
+        <% if (allowed || forbidden) { %>
         <div id="LEGEND_<%= type %>" class="panel-collapse collapse">
             <table class="table">
                 <tr>
@@ -142,6 +151,7 @@
                 </tr>
             </table>
         </div>
+        <% } %>
     </div>
 </script>
 <script type="text/template" id="popupTemplate">
