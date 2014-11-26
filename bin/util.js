@@ -101,6 +101,7 @@ function split_date_list(date_list) {
 
 module.exports = exports = {
   parseDate: parse_date,
-  splitDateList: split_date_list
+  splitDateList: split_date_list,
+  dateWithoutYear: date_without_year
 };
 

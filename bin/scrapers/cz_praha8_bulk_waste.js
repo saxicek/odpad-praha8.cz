@@ -18,28 +18,46 @@ scraper.parse = function(body, callback) {
   var containers = [],
     $ = cheerio.load(body);
 
-  $('table.mcp8').find('tr:not(.mcp8TableHeaderRow)').each(function(i, elem) {
-    // skip header
-    var cells = $(this).find('td');
-    var place_name = cells.eq(0).find('span').text().replace(/'/g,"''");
+  $('table.mcp8').each(function() {
+    var
+      place_idx,
+      time_idx,
+      date_idx;
 
-    var raw_date,
-      raw_time;
-    // check if there is a column with number of containers
-    if (cells.eq(1).find('span').text().match(/^\d+$/)) {
-      raw_date = cells.eq(2).find('span').text();
-      raw_time = cells.eq(3).find('span').text();
-    } else {
-      raw_date = cells.eq(1).find('span').text();
-      raw_time = cells.eq(2).find('span').text();
-    }
-    var dates = util.parseDate(raw_date, raw_time);
-    containers[i] = {
-      place_name: place_name,
-      time_from: dates.time_from,
-      time_to: dates.time_to,
-      container_type: 'BULK_WASTE'
-    };
+    // detect which column has what information
+    $(this).find('tr.mcp8TableHeaderRow').find('td').each(function(i) {
+      var value = $(this).text();
+      if (value.indexOf('Místo') > -1 || value.indexOf('Lokalita') > -1) {
+        place_idx = i;
+      } else if (value.indexOf('Datum') > -1) {
+        date_idx = i;
+      } else if (value.indexOf('Čas') > -1 || value.indexOf('Ćas') > -1) {
+        time_idx = i;
+      }
+    });
+
+    $(this).find('tr:not(.mcp8TableHeaderRow)').each(function() {
+      // skip header
+      var
+        cells,
+        place_name,
+        raw_date,
+        raw_time,
+        dates;
+
+      cells = $(this).find('td');
+      place_name = cells.eq(place_idx).text().trim().replace(/'/g,"''");
+      raw_date = cells.eq(date_idx).text().trim();
+      raw_time = cells.eq(time_idx).text().trim();
+      dates = util.parseDate(raw_date, raw_time);
+      containers.push({
+        place_name: place_name,
+        time_from: dates.time_from,
+        time_to: dates.time_to,
+        container_type: 'BULK_WASTE'
+      });
+    });
+
   });
 
   // first argument of callback is null - no error was raised
