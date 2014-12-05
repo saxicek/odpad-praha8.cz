@@ -102,7 +102,7 @@ var scraperPrototype = {
           callback(err);
         }
       },
-      // remove previously parsed containers (if configured so using scraper parameter forceUpdate)
+      // remove previously parsed containers (if configured so using scraper parameter removeExisting)
       function(containers, callback) {
         var
           validContainerTimes,
