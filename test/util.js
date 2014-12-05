@@ -116,6 +116,9 @@ describe('util', function() {
       expect(util.normalizePlace).to.be.a('function');
     });
 
+    it('should support null on input', function() {
+      expect(util.normalizePlace(null)).to.equal.null;
+    });
     it('should remove &nbsp;', function() {
       expect(util.normalizePlace('\u00A0')).to.equal(' ');
       expect(util.normalizePlace('First\u00A0and\u00A0second.')).to.equal('First and second.');

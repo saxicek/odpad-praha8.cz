@@ -100,6 +100,7 @@ function split_date_list(date_list) {
 }
 
 function normalize_place(place) {
+  if (!place) return null;
   return place
     .replace(/\u00A0/g, ' ')
     .replace(/[ ]+/g, ' ');
