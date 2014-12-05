@@ -9,6 +9,7 @@ var
   _            = require('lodash'),
   EventEmitter = require('events').EventEmitter,
   db           = require('./db.js'),
+  parserUtil   = require('./parser_util.js'),
 
   emitter      = new EventEmitter()
   ;
@@ -101,6 +102,18 @@ var scraperPrototype = {
         catch (err) {
           callback(err);
         }
+      },
+      // populate and normalize data
+      function(containers, callback) {
+        if (containers && containers.length > 0) {
+          // add district id and container type to containers
+          containers.forEach(function(container) {
+            container.district_id = self.districtId;
+            container.container_type = container.container_type || self.containerType;
+            container.place_name = parserUtil.normalizePlace(container.place_name);
+          });
+        }
+        callback(null, containers);
       },
       // remove previously parsed containers (if configured so using scraper parameter removeExisting)
       function(containers, callback) {
@@ -237,11 +250,6 @@ var scraperPrototype = {
           // add containers
           containers: function(callback) {
             self.info('Inserting containers');
-            // add district id and container type to containers
-            containers.forEach(function(container) {
-              container.district_id = self.districtId;
-              container.container_type = container.container_type || self.containerType;
-            });
             async.mapLimit(containers, config.db_inserts_parallel_limit, self.addContainer, function(err, results) {
               if (err) return callback(err);
               callback(null, results.reduce(self.reduceInsertResults));
