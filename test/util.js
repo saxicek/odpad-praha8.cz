@@ -111,4 +111,21 @@ describe('util', function() {
     });
   });
 
+  describe('normalizePlace()', function() {
+    it('should expose a function', function() {
+      expect(util.normalizePlace).to.be.a('function');
+    });
+
+    it('should remove &nbsp;', function() {
+      expect(util.normalizePlace('\u00A0')).to.equal(' ');
+      expect(util.normalizePlace('First\u00A0and\u00A0second.')).to.equal('First and second.');
+    });
+
+    it('should remove double spaces', function() {
+      expect(util.normalizePlace('  ')).to.equal(' ');
+      expect(util.normalizePlace('\u00A0\u00A0')).to.equal(' ');
+      expect(util.normalizePlace('First\u00A0\u00A0and\u00A0\u00A0second     and\u00A0third.')).to.equal('First and second and third.');
+    });
+  });
+
 });

@@ -99,9 +99,16 @@ function split_date_list(date_list) {
   return dates;
 }
 
+function normalize_place(place) {
+  return place
+    .replace(/\u00A0/g, ' ')
+    .replace(/[ ]+/g, ' ');
+}
+
 module.exports = exports = {
   parseDate: parse_date,
   splitDateList: split_date_list,
-  dateWithoutYear: date_without_year
+  dateWithoutYear: date_without_year,
+  normalizePlace: normalize_place
 };
 
