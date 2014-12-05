@@ -125,6 +125,7 @@ var scraperPrototype = {
           if (!containers || containers.length === 0) {
             // if district and container type is specified, delete all existing data
             if (self.districtId && self.containerType) {
+              self.info('Deleting all previously parsed containers');
               db.deleteContainersAll(self.containerType, self.districtId, function(err) {
                 if (err) {
                   self.error('Cannot delete all containers of type '+self.containerType+' in district '+self.districtName+'!');
@@ -138,7 +139,11 @@ var scraperPrototype = {
             }
           } else {
             timesAllNull = containers[0].time_from === null;
-            self.info('Deleting previously parsed containers from current period');
+            if (timesAllNull) {
+              self.info('Deleting all previously parsed containers');
+            } else {
+              self.info('Deleting previously parsed containers from current period');
+            }
             // Each container can have following time values coming from the parser:
             //
             // 1. both time_from and time_to have value set to specific date and time
