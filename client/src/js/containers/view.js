@@ -250,8 +250,8 @@ define([
           }
           popup = popupTpl({
             place_name: place.get('place_name'),
-            time_from: moment(m.get('time_from')).tz('Europe/Prague').format('H:mm'),
-            time_to: moment(m.get('time_to')).tz('Europe/Prague').format('H:mm')
+            time_from: (m.get('time_from')) ? moment(m.get('time_from')).tz('Europe/Prague').format('H:mm') : null,
+            time_to: (m.get('time_to')) ? moment(m.get('time_to')).tz('Europe/Prague').format('H:mm') : null
           });
           marker = L.marker({lat:place.get('lat'), lng:place.get('lng')}, {icon: icon})
             .bindPopup(popup, {closeButton:false})
@@ -272,12 +272,19 @@ define([
       // updates collection of shown models by filtering date and location
       updateFilter:function () {
         this.filteredModel.reset(this.model.filter(function (m) {
-          // return containers for current day
-          return moment(m.get('time_from')).isSame(appState.filterDate.get('filter_date'), 'day') &&
-            // which are not yet removed
-            moment().isBefore(m.get('time_to')) &&
-            // and with location specified
-            appState.places.get(m.get('place_id')).hasLocation();
+          // containers for current day
+          if (m.get('time_from') && !moment(m.get('time_from')).isSame(appState.filterDate.get('filter_date'), 'day')) {
+            return false;
+          }
+          // which are not yet removed
+          if (m.get('time_to') && moment().isAfter(m.get('time_to'))) {
+            return false;
+          }
+          // with location specified
+          if (!appState.places.get(m.get('place_id')) || !appState.places.get(m.get('place_id')).hasLocation()) {
+            return false;
+          }
+          return true;
         }));
       },
       updateMarkerBindings:function () {

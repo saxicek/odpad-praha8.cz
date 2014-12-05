@@ -157,8 +157,10 @@
 <script type="text/template" id="popupTemplate">
     <div class="text-center containers-edit">
         <strong><%= place_name %></strong>
+        <% if (time_from && time_to) { %>
         <br />
         <span><%= time_from %> - <%= time_to %></span>
+        <% } %>
         <a class="btn btn-link btn-xs movePlaceButton" href="#"><span class="glyphicon glyphicon-pencil"></span></a>
     </div>
 </script>
