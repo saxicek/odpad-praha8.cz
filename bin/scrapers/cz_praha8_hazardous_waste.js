@@ -1,6 +1,6 @@
 var
   cheerio     = require('cheerio'),
-  util        = require('../util.js'),
+  parserUtil  = require('../parser_util.js'),
   path        = require('path'),
   scraper     = require('../scraper.js').createScraper(path.basename(__filename, '.js'))
 ;
@@ -23,7 +23,7 @@ scraper.parse = function(body, callback) {
     i = 0;
 
   $('table.mcp8').each(function() {
-    var str_dates = util.splitDateList($(this).find('tr.mcp8TableFooterRow').find('td').contents().slice(1,2).text());
+    var str_dates = parserUtil.splitDateList($(this).find('tr.mcp8TableFooterRow').find('td').contents().slice(1,2).text());
     // for each row (skip header and footer)
     $(this).find('tr').slice(2, -1).each(function() {
       var
@@ -38,7 +38,7 @@ scraper.parse = function(body, callback) {
 
       // combine parsed date and time information
       str_dates.forEach(function(date) {
-        dates = util.parseDate(date, raw_time);
+        dates = parserUtil.parseDate(date, raw_time);
         containers[i++] = {
           place_name:place_name,
           time_from:dates.time_from,

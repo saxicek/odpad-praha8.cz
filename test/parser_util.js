@@ -1,8 +1,11 @@
-var expect = require('chai').expect,
-    sinon  = require('sinon'),
-    util   = require('../bin/util.js');
+/* Disable Chai Expect jshint errors: https://github.com/chaijs/chai/issues/41 */
+/* jshint -W024 */
+/* jshint expr:true */
+var expect   = require('chai').expect,
+    sinon    = require('sinon'),
+  parserUtil = require('../bin/parser_util.js');
 
-describe('util', function() {
+describe('parserUtil', function() {
 
   describe('parseDate()', function() {
     // parse date is sensitive to current date since it is
@@ -12,46 +15,46 @@ describe('util', function() {
     });
 
     it('should expose a function', function () {
-      expect(util.parseDate).to.be.a('function');
+      expect(parserUtil.parseDate).to.be.a('function');
     });
 
     it('should parse valid input', function() {
-      expect(util.parseDate('31.12.', '13.00-17.00')).to.eql({
+      expect(parserUtil.parseDate('31.12.', '13.00-17.00')).to.eql({
         'time_from': new Date(2012, 11, 31, 13, 0),
         'time_to': new Date(2012, 11, 31, 17, 0)
       });
     });
 
     it('should support unicode "en dash" character', function() {
-      expect(util.parseDate('31.12.', '13.00\u201317.00')).to.eql({
+      expect(parserUtil.parseDate('31.12.', '13.00\u201317.00')).to.eql({
         'time_from': new Date(2012, 11, 31, 13, 0),
         'time_to': new Date(2012, 11, 31, 17, 0)
       });
     });
 
     it('should set date to next year if current date > parsed date', function() {
-      expect(util.parseDate('01.01.', '13.00-17.00')).to.eql({
+      expect(parserUtil.parseDate('01.01.', '13.00-17.00')).to.eql({
         'time_from': new Date(2013, 0, 1, 13, 0),
         'time_to': new Date(2013, 0, 1, 17, 0)
       });
     });
 
     it('should parse valid input', function() {
-      expect(util.parseDate('31.12.2014', '13.00-17.00 hod.')).to.eql({
+      expect(parserUtil.parseDate('31.12.2014', '13.00-17.00 hod.')).to.eql({
         'time_from': new Date(2014, 11, 31, 13, 0),
         'time_to': new Date(2014, 11, 31, 17, 0)
       });
     });
 
     it('should parse input with space in time interval', function() {
-      expect(util.parseDate('31.12.2014', '13.00 -17.00 hod.')).to.eql({
+      expect(parserUtil.parseDate('31.12.2014', '13.00 -17.00 hod.')).to.eql({
         'time_from': new Date(2014, 11, 31, 13, 0),
         'time_to': new Date(2014, 11, 31, 17, 0)
       });
     });
 
     it('should parse input with space in date', function() {
-      expect(util.parseDate('31. 12.', '13.00-17.00 hod.')).to.eql({
+      expect(parserUtil.parseDate('31. 12.', '13.00-17.00 hod.')).to.eql({
         'time_from': new Date(2012, 11, 31, 13, 0),
         'time_to': new Date(2012, 11, 31, 17, 0)
       });
@@ -70,21 +73,21 @@ describe('util', function() {
     });
 
     it('should parse valid input', function() {
-      expect(util.parseDate('31.2.', '13.00-17.00')).to.eql({
+      expect(parserUtil.parseDate('31.2.', '13.00-17.00')).to.eql({
         'time_from': new Date(2013, 1, 31, 13, 0),
         'time_to': new Date(2013, 1, 31, 17, 0)
       });
     });
 
     it('should parse valid input', function() {
-      expect(util.parseDate('31.1.', '13.00-17.00')).to.eql({
+      expect(parserUtil.parseDate('31.1.', '13.00-17.00')).to.eql({
         'time_from': new Date(2013, 0, 31, 13, 0),
         'time_to': new Date(2013, 0, 31, 17, 0)
       });
     });
 
     it('should set date to previous year if current date < parsed date', function () {
-      expect(util.parseDate('01.12.', '13.00-17.00')).to.eql({
+      expect(parserUtil.parseDate('01.12.', '13.00-17.00')).to.eql({
         'time_from':new Date(2012, 11, 1, 13, 0),
         'time_to':new Date(2012, 11, 1, 17, 0)
       });
@@ -97,11 +100,11 @@ describe('util', function() {
 
   describe('splitDateList()', function() {
     it('should expose a function', function () {
-      expect(util.splitDateList).to.be.a('function');
+      expect(parserUtil.splitDateList).to.be.a('function');
     });
 
     it('should parse valid input', function() {
-      expect(util.splitDateList('17.03., 28.04., 07.07., 15.09., 27.10.2014')).to.eql([
+      expect(parserUtil.splitDateList('17.03., 28.04., 07.07., 15.09., 27.10.2014')).to.eql([
         '17.03.2014',
         '28.04.2014',
         '07.07.2014',
@@ -113,21 +116,21 @@ describe('util', function() {
 
   describe('normalizePlace()', function() {
     it('should expose a function', function() {
-      expect(util.normalizePlace).to.be.a('function');
+      expect(parserUtil.normalizePlace).to.be.a('function');
     });
 
     it('should support null on input', function() {
-      expect(util.normalizePlace(null)).to.equal.null;
+      expect(parserUtil.normalizePlace(null)).to.equal.null;
     });
     it('should remove &nbsp;', function() {
-      expect(util.normalizePlace('\u00A0')).to.equal(' ');
-      expect(util.normalizePlace('First\u00A0and\u00A0second.')).to.equal('First and second.');
+      expect(parserUtil.normalizePlace('\u00A0')).to.equal(' ');
+      expect(parserUtil.normalizePlace('First\u00A0and\u00A0second.')).to.equal('First and second.');
     });
 
     it('should remove double spaces', function() {
-      expect(util.normalizePlace('  ')).to.equal(' ');
-      expect(util.normalizePlace('\u00A0\u00A0')).to.equal(' ');
-      expect(util.normalizePlace('First\u00A0\u00A0and\u00A0\u00A0second     and\u00A0third.')).to.equal('First and second and third.');
+      expect(parserUtil.normalizePlace('  ')).to.equal(' ');
+      expect(parserUtil.normalizePlace('\u00A0\u00A0')).to.equal(' ');
+      expect(parserUtil.normalizePlace('First\u00A0\u00A0and\u00A0\u00A0second     and\u00A0third.')).to.equal('First and second and third.');
     });
   });
 

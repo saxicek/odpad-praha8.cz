@@ -1,6 +1,6 @@
 var
   cheerio     = require('cheerio'),
-  util        = require('../util.js'),
+  parserUtil  = require('../parser_util.js'),
   path        = require('path'),
   scraper     = require('../scraper.js').createScraper(path.basename(__filename, '.js'))
 ;
@@ -28,7 +28,7 @@ scraper.parse = function(body, callback) {
       place_name = cells.eq(1).text().replace(/'/g,"''"),
       raw_date = cells.eq(0).text(),
       raw_time = cells.eq(2).text().trim() + '-' + cells.eq(3).text().trim(),
-      dates = util.parseDate(raw_date, raw_time);
+      dates = parserUtil.parseDate(raw_date, raw_time);
 
     containers[i] = {
       place_name: place_name,
