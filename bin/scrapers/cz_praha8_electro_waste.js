@@ -16,6 +16,9 @@ scraper.minScrapeInterval = '1.00:00:00'; // once a day
 // container type set to all parsed containers
 scraper.containerType = 'ELECTRO_WASTE';
 
+// all existing containers should be removed
+scraper.removeExisting = true;
+
 scraper.parse = function(body, callback) {
   // parse html page
   var containers = [],
