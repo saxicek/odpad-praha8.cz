@@ -24,18 +24,23 @@ function insert_place(place_name, district_id, container_type, callback) {
 }
 
 function find_container(place_id, time_from, time_to, container_type, callback) {
-  var stmt = "SELECT id FROM container WHERE place_id = $1::integer AND time_from = $2::timestamp AT TIME ZONE 'Europe/Prague' AND time_to = $3::timestamp AT TIME ZONE 'Europe/Prague' AND container_type = $4::text;";
+  var stmt = "SELECT id" +
+    "           FROM container" +
+    "          WHERE place_id = $1::integer" +
+    "            AND (time_from = $2::timestamp AT TIME ZONE 'Europe/Prague' OR (time_from IS NULL AND $2 IS NULL))" +
+    "            AND (time_to = $3::timestamp AT TIME ZONE 'Europe/Prague' OR (time_to IS NULL AND $3 IS NULL))" +
+    "            AND container_type = $4::text;";
   pg.first(stmt, [place_id, time_from, time_to, container_type], callback);
 }
 
 function insert_container(place_id, time_from, time_to, container_type, callback) {
-  var stmt = "INSERT INTO container (place_id, time_from, time_to, container_type) VALUES ($1::integer, $2::timestamp AT TIME ZONE 'Europe/Prague', $3::timestamp AT TIME ZONE 'Europe/Prague', $4::text);";
+  var stmt = "INSERT INTO container (place_id, time_from, time_to, container_type) VALUES ($1::integer, $2::timestamp AT TIME ZONE 'Europe/Prague', $3::timestamp AT TIME ZONE 'Europe/Prague', $4::text) RETURNING id;";
   pg(stmt, [place_id, time_from, time_to, container_type], callback);
 }
 
 function get_containers(req, res, next){
   console.info('Selecting all containers');
-  pg("SELECT id, time_from, time_to, place_id, container_type FROM container WHERE time_to > NOW();", function(err, rows, result) {
+  pg("SELECT id, time_from, time_to, place_id, container_type FROM container WHERE time_to > NOW() OR time_to IS NULL;", function(err, rows, result) {
     if(err) {
       console.error('Error running get_containers query\n', err);
       return next(err);
@@ -182,6 +187,33 @@ function check_place_in_district(place_id, lat, lng, callback) {
   });
 }
 
+function delete_containers_range(container_type, district_id, time_from, time_to, callback) {
+  pg("DELETE FROM container" +
+    "       WHERE time_from BETWEEN timezone('Europe/Prague', $1::timestamp) AND timezone('Europe/Prague', $2::timestamp)" +
+    "         AND container_type = $3::text" +
+    "         AND place_id IN (SELECT id FROM place WHERE district_id = $4::integer AND container_type = $3::text);",
+    [time_from, time_to, container_type, district_id], function(err) {
+    if(err) {
+      return callback(err);
+    }
+    return callback();
+  });
+}
+
+function delete_containers_all(container_type, district_id, callback) {
+  pg("DELETE FROM container" +
+    "       WHERE time_from IS NULL" +
+    "         AND time_to IS NULL" +
+    "         AND container_type = $1::text" +
+    "         AND place_id IN (SELECT id FROM place WHERE district_id = $2::integer AND container_type = $1::text);",
+    [container_type, district_id], function(err) {
+      if(err) {
+        return callback(err);
+      }
+      return callback();
+    });
+}
+
 module.exports = exports = {
   pg:                pg,
   getContainers:     get_containers,
@@ -200,6 +232,8 @@ module.exports = exports = {
   findDistrictId:    find_district_id,
   findDistrict:      find_district,
   checkPlaceInDistrict:  check_place_in_district,
+  deleteContainersRange: delete_containers_range,
+  deleteContainersAll:   delete_containers_all,
   SCRAPE_STATUS_SUCCESS: SCRAPE_STATUS.SUCCESS,
   SCRAPE_STATUS_SKIPPED: SCRAPE_STATUS.SKIPPED,
   SCRAPE_STATUS_ERROR:   SCRAPE_STATUS.ERROR,

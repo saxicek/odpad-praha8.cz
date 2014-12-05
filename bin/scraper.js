@@ -6,6 +6,7 @@ var
   util         = require('util'),
   async        = require('async'),
   moment       = require('moment'),
+  _            = require('lodash'),
   EventEmitter = require('events').EventEmitter,
   db           = require('./db.js'),
 
@@ -21,8 +22,19 @@ ScrapeSkipError.prototype = new Error();
 ScrapeSkipError.prototype.constructor = ScrapeSkipError;
 
 var scraperPrototype = {
-  minScrapeInterval: null,
+  // districtName property should be overridden to set specific district name
   districtName: null,
+  // minScrapeInterval property can be overridden to specify minimum interval between scrapes
+  minScrapeInterval: null,
+  // containerType property can be overridden to set same container type on all parsed values
+  containerType: null,
+  // removeExisting property can be overridden to forcibly delete existing containers parsed in previous runs
+  // if set to true and parser returns permanent containers (i.e. containers with time_from and time_to
+  // set to null) then all existing containers with given district and container type are deleted;
+  // if set to true and parser returns non-permanent containers then only containers within parsed range
+  // are deleted
+  removeExisting: false,
+  // this is internal property that is set from district name
   districtId: null,
   scrape: function(callback) {
     var
@@ -88,6 +100,96 @@ var scraperPrototype = {
         }
         catch (err) {
           callback(err);
+        }
+      },
+      // remove previously parsed containers (if configured so using scraper parameter forceUpdate)
+      function(containers, callback) {
+        var
+          validContainerTimes,
+          minMaxTimeFrom,
+          timesAllNull;
+        if (self.removeExisting) {
+          if (!containers || containers.length === 0) {
+            // if district and container type is specified, delete all existing data
+            if (self.districtId && self.containerType) {
+              db.deleteContainersAll(self.containerType, self.districtId, function(err) {
+                if (err) {
+                  self.error('Cannot delete all containers of type '+self.containerType+' in district '+self.districtName+'!');
+                  return callback(err);
+                }
+                callback(null, containers);
+              });
+            } else {
+              // do not delete anything, just continue
+              callback(null, containers);
+            }
+          } else {
+            timesAllNull = containers[0].time_from === null;
+            self.info('Deleting previously parsed containers from current period');
+            // Each container can have following time values coming from the parser:
+            //
+            // 1. both time_from and time_to have value set to specific date and time
+            // 2. only time_from is set to specific date and time, time_to is null
+            // 3. only time_to is set to specific date and time, time_from is null
+            // 4. both time_from and time_to are null
+            //
+            // Variants 2 and 3 are not supported and raise error immediately when found.
+            //
+            // Also combination of variants 1 and 4 in the result set is not supported
+            // and raises error.
+
+            // check that containers have only supported variants of time_from and
+            // time_to values (1 and 4 as described above)
+            validContainerTimes = containers.every(function(container) {
+              return ((container.time_from === null && container.time_to === null && timesAllNull) ||
+                (container.time_from !== null && container.time_to !== null && !timesAllNull));
+            });
+            if (!validContainerTimes) {
+              return callback(new Error('Combination of null and not null values is not allowed for container time_from and time_to attributes!'));
+            }
+
+            // if all times are null then delete all existing containers of given type
+            if (timesAllNull) {
+              async.eachSeries(_(containers).pluck('container_type').uniq().value(), function(containerType, callback) {
+                db.deleteContainersAll(containerType, self.districtId, function(err) {
+                  if (err) {
+                    self.error('Cannot delete all containers of type '+containerType+' in district '+self.districtName+'!');
+                    return callback(err);
+                  }
+                  callback();
+                });
+              }, function(err) {
+                if (err) {
+                  return callback(err);
+                }
+                callback(null, containers);
+              });
+            } else {
+              // select min / max values for time_from field for each container type
+              minMaxTimeFrom = _(containers)
+                .groupBy('container_type')
+                .mapValues(function(containers) {
+                  return { minTimeFrom: _.min(containers, 'time_from').time_from, maxTimeFrom: _.max(containers, 'time_from').time_from};
+                })
+                .value();
+
+              // delete existing containers for each container type within specific time range
+              async.eachSeries(_.keys(minMaxTimeFrom), function(containerType, callback) {
+                db.deleteContainersRange(containerType, self.districtId, minMaxTimeFrom[containerType].minTimeFrom,
+                                         minMaxTimeFrom[containerType].maxTimeFrom, function(err) {
+                  if (err) return callback(err);
+                  callback();
+                });
+              }, function(err) {
+                if (err) {
+                  return callback(err);
+                }
+                callback(null, containers);
+              });
+            }
+          }
+        } else {
+          return callback(null, containers);
         }
       },
       // import data to DB
