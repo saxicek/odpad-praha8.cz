@@ -37,7 +37,7 @@ describe('cz_praha8_hazardous_waste', function() {
         expect(res[0].place_name).to.equal('křižovatka ul. Prosecká – Pod Labuťkou');
         expect(res[0].time_from).to.eql(new Date(2014, 2, 17, 15, 0));
         expect(res[0].time_to).to.eql(new Date(2014, 2, 17, 15, 20));
-        expect(res[0].container_type).to.equal('HAZARDOUS_WASTE');
+        expect(res[0].container_type || scraper.containerType).to.equal('HAZARDOUS_WASTE');
         done();
       });
     });

@@ -41,7 +41,7 @@ describe('cz_praha8_bio_waste', function() {
         expect(res[0].place_name).to.equal('Na Hájku x Nad Kotlaskou');
         expect(res[0].time_from).to.eql(new Date((new Date()).getFullYear(), 9, 1, 14, 0));
         expect(res[0].time_to).to.eql(new Date((new Date()).getFullYear(), 9, 1, 18, 0));
-        expect(res[0].container_type).to.equal('BIO_WASTE');
+        expect(res[0].container_type || scraper.containerType).to.equal('BIO_WASTE');
         done();
       });
     });
@@ -60,7 +60,7 @@ describe('cz_praha8_bio_waste', function() {
         expect(res[13].place_name).to.equal('Javorová x Březová');
         expect(res[13].time_from).to.eql(new Date((new Date()).getFullYear(), 10, 4, 15, 0));
         expect(res[13].time_to).to.eql(new Date((new Date()).getFullYear(), 10, 4, 19, 0));
-        expect(res[13].container_type).to.equal('BIO_WASTE');
+        expect(res[13].container_type || scraper.containerType).to.equal('BIO_WASTE');
         done();
       });
     });

@@ -237,9 +237,10 @@ var scraperPrototype = {
           // add containers
           containers: function(callback) {
             self.info('Inserting containers');
-            // add district id to containers
+            // add district id and container type to containers
             containers.forEach(function(container) {
               container.district_id = self.districtId;
+              container.container_type = container.container_type || self.containerType;
             });
             async.mapLimit(containers, config.db_inserts_parallel_limit, self.addContainer, function(err, results) {
               if (err) return callback(err);

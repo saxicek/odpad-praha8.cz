@@ -13,6 +13,9 @@ scraper.districtName = 'Praha 8';
 // minimum interval between scrapes; format is moment.duration(String);
 scraper.minScrapeInterval = '1.00:00:00'; // once a day
 
+// container type set to all parsed containers
+scraper.containerType = 'HAZARDOUS_WASTE';
+
 scraper.parse = function(body, callback) {
   // parse html page
   var containers = [],
@@ -39,8 +42,7 @@ scraper.parse = function(body, callback) {
         containers[i++] = {
           place_name:place_name,
           time_from:dates.time_from,
-          time_to:dates.time_to,
-          container_type:'HAZARDOUS_WASTE'
+          time_to:dates.time_to
         };
       });
     });

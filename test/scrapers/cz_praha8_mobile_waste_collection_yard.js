@@ -37,7 +37,7 @@ describe('cz_praha8_mobile_waste_collection_yard', function() {
         expect(res[0].place_name).to.equal('Zhořelecká x Radomská');
         expect(res[0].time_from).to.eql(new Date((new Date()).getFullYear(), 9, 4, 8, 0));
         expect(res[0].time_to).to.eql(new Date((new Date()).getFullYear(), 9, 4, 14, 0));
-        expect(res[0].container_type).to.equal('MOBILE_WASTE_COLLECTION_YARD');
+        expect(res[0].container_type || scraper.containerType).to.equal('MOBILE_WASTE_COLLECTION_YARD');
         done();
       });
     });
