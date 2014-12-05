@@ -103,7 +103,9 @@ function normalize_place(place) {
   if (!place) return null;
   return place
     .replace(/\u00A0/g, ' ')
-    .replace(/[ ]+/g, ' ');
+    .trim()
+    .replace(/[ ]+/g, ' ')
+    .replace(/'/g,"''");
 }
 
 module.exports = exports = {

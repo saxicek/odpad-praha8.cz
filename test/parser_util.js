@@ -123,14 +123,22 @@ describe('parserUtil', function() {
       expect(parserUtil.normalizePlace(null)).to.equal.null;
     });
     it('should remove &nbsp;', function() {
-      expect(parserUtil.normalizePlace('\u00A0')).to.equal(' ');
+      expect(parserUtil.normalizePlace('a\u00A0b')).to.equal('a b');
       expect(parserUtil.normalizePlace('First\u00A0and\u00A0second.')).to.equal('First and second.');
     });
 
     it('should remove double spaces', function() {
-      expect(parserUtil.normalizePlace('  ')).to.equal(' ');
-      expect(parserUtil.normalizePlace('\u00A0\u00A0')).to.equal(' ');
+      expect(parserUtil.normalizePlace('a  b')).to.equal('a b');
+      expect(parserUtil.normalizePlace('a\u00A0\u00A0b')).to.equal('a b');
       expect(parserUtil.normalizePlace('First\u00A0\u00A0and\u00A0\u00A0second     and\u00A0third.')).to.equal('First and second and third.');
+    });
+
+    it('should trim spaces', function() {
+      expect(parserUtil.normalizePlace(' test ')).to.equal('test');
+    });
+
+    it('should replace one single quote with two single quotes', function() {
+      expect(parserUtil.normalizePlace("'")).to.equal("''");
     });
   });
 
