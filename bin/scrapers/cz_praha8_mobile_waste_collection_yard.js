@@ -25,7 +25,7 @@ scraper.parse = function(body, callback) {
     // skip header
     var
       cells = $(this).find('td'),
-      place_name = cells.eq(1).text().replace(/'/g,"''"),
+      place_name = cells.eq(1).text(),
       raw_date = cells.eq(0).text(),
       raw_time = cells.eq(2).text().trim() + '-' + cells.eq(3).text().trim(),
       dates = parserUtil.parseDate(raw_date, raw_time);

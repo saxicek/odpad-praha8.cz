@@ -38,7 +38,7 @@ describe('cz_praha8_bio_waste', function() {
     it('should parse row from first data correctly', function(done) {
       scraper.parse(body_1, function(err, res){
         if (err) return done(err);
-        expect(res[0].place_name).to.equal('Na Hájku x Nad Kotlaskou');
+        expect(res[0].place_name).to.equal(' Na Hájku x Nad Kotlaskou ');
         expect(res[0].time_from).to.eql(new Date((new Date()).getFullYear(), 9, 1, 14, 0));
         expect(res[0].time_to).to.eql(new Date((new Date()).getFullYear(), 9, 1, 18, 0));
         expect(res[0].container_type || scraper.containerType).to.equal('BIO_WASTE');

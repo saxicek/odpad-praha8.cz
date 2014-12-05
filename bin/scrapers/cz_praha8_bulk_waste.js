@@ -49,7 +49,7 @@ scraper.parse = function(body, callback) {
         dates;
 
       cells = $(this).find('td');
-      place_name = cells.eq(place_idx).text().trim().replace(/'/g,"''");
+      place_name = cells.eq(place_idx).text();
       raw_date = cells.eq(date_idx).text().trim();
       raw_time = cells.eq(time_idx).text().trim();
       dates = parserUtil.parseDate(raw_date, raw_time);

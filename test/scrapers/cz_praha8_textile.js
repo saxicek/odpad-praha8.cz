@@ -36,7 +36,7 @@ describe('cz_praha8_electro_waste', function() {
     it('should parse row from first data correctly', function(done) {
       scraper.parse(body_1, function(err, res){
         if (err) return done(err);
-        expect(res[0].place_name).to.equal('NC Krakov, Lodžská ul.,\nzas. autobusu Krakov');
+        expect(res[0].place_name).to.equal(' NC Krakov, Lodžská ul.,\nzas. autobusu Krakov ');
         expect(res[0].time_from).to.be.null;
         expect(res[0].time_to).to.be.null;
         expect(res[0].container_type || scraper.containerType).to.equal('TEXTILE');

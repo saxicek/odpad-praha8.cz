@@ -24,7 +24,7 @@ scraper.parse = function(body, callback) {
   $('table.mcp8').find('tr:not(.mcp8TableHeaderRow)').each(function(i, elem) {
     // skip header
     var cells = $(this).find('td');
-    var place_name = cells.eq(0).text().trim().replace(/'/g,"''");
+    var place_name = cells.eq(0).text();
 
     var raw_date,
       raw_time;
