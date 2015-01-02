@@ -1,4 +1,4 @@
-# Map of waste containers in Prague 8
+# Map of waste containers in Prague
 *powered by RESTify, PostGIS, and Leaflet maps*
 
 [![Dependency Status](https://david-dm.org/saxicek/odpad-praha8.cz.svg?theme=shields.io)](https://david-dm.org/saxicek/odpad-praha8.cz)
