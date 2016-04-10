@@ -12,7 +12,7 @@ describe('cz_praha8_mobile_waste_collection_yard', function() {
     before(function(done) {
       fs.readFile('test/data/mobilni_sberny_dvur_2014-10-03.html', 'utf8', function (err, data) {
         if (err) {
-          return console.log(err);
+          return done(err);
         }
         body = data;
         done();
@@ -45,4 +45,3 @@ describe('cz_praha8_mobile_waste_collection_yard', function() {
   });
 
 });
-

@@ -15,13 +15,13 @@ describe('cz_praha8_bulk_waste', function() {
     // guessing year from current date and input parameters
     before(function(done) {
       fs.readFile('test/data/velkoobjemove_kontejnery_2014-04-30.html', 'utf8', function (err, data) {
-        if (err) return console.log(err);
+        if (err) return done(err);
         body_1 = data;
         fs.readFile('test/data/velkoobjemove_kontejnery_2014-10-17.htm', 'utf8', function (err, data) {
-          if (err) return console.log(err);
+          if (err) return done(err);
           body_2 = data;
           fs.readFile('test/data/velkoobjemove_kontejnery_2014-11-26.htm', 'utf8', function (err, data) {
-            if (err) return console.log(err);
+            if (err) return done(err);
             body_3 = data;
             done();
           });
@@ -119,4 +119,3 @@ describe('cz_praha8_bulk_waste', function() {
   });
 
 });
-

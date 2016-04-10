@@ -15,7 +15,7 @@ describe('cz_praha8_electro_waste', function() {
     // guessing year from current date and input parameters
     before(function(done) {
       fs.readFile('test/data/textil_2014-12-05.html', 'utf8', function (err, data) {
-        if (err) return console.log(err);
+        if (err) return done(err);
         body_1 = data;
         done();
       });
@@ -47,4 +47,3 @@ describe('cz_praha8_electro_waste', function() {
   });
 
 });
-
