@@ -10,9 +10,10 @@ describe('cz_praha8_hazardous_waste', function() {
     // parse date is sensitive to current date since it is
     // guessing year from current date and input parameters
     before(function(done) {
-      fs.readFile('test/data/nebezpecny_odpad_2014-10-03.html', 'utf8', function (err, data) {
+      fs.readFile('test/data/nebezpecny_odpad_2016-04-10.html', 'utf8', function (err, data) {
         if (err) {
-          return console.log(err);
+          console.error(err);
+          return done(err);
         }
         body = data;
         done();
@@ -34,9 +35,9 @@ describe('cz_praha8_hazardous_waste', function() {
     it('should parse row correctly', function(done) {
       scraper.parse(body, function(err, res){
         if (err) return done(err);
-        expect(res[0].place_name).to.equal('křižovatka ul. Prosecká – Pod Labuťkou ');
-        expect(res[0].time_from).to.eql(new Date(2014, 2, 17, 15, 0));
-        expect(res[0].time_to).to.eql(new Date(2014, 2, 17, 15, 20));
+        expect(res[0].place_name).to.equal('křižovatka ul. Prosecká – Pod Labuťkou');
+        expect(res[0].time_from).to.eql(new Date(2016, 3, 27, 15, 0));
+        expect(res[0].time_to).to.eql(new Date(2016, 3, 27, 15, 20));
         expect(res[0].container_type || scraper.containerType).to.equal('HAZARDOUS_WASTE');
         done();
       });
@@ -45,4 +46,3 @@ describe('cz_praha8_hazardous_waste', function() {
   });
 
 });
-

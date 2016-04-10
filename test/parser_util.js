@@ -99,11 +99,17 @@ describe('parserUtil', function() {
   });
 
   describe('splitDateList()', function() {
+    // parse date is sensitive to current date since it is
+    // guessing year from current date and input parameters
+    before(function() {
+      this.clock = sinon.useFakeTimers((new Date(2016, 2, 15)).getTime(), 'Date');
+    });
+
     it('should expose a function', function () {
       expect(parserUtil.splitDateList).to.be.a('function');
     });
 
-    it('should parse valid input', function() {
+    it('should parse valid input with year', function() {
       expect(parserUtil.splitDateList('17.03., 28.04., 07.07., 15.09., 27.10.2014')).to.eql([
         '17.03.2014',
         '28.04.2014',
@@ -111,6 +117,19 @@ describe('parserUtil', function() {
         '15.09.2014',
         '27.10.2014'
       ]);
+    });
+
+    it('should parse valid input without year', function() {
+      expect(parserUtil.splitDateList('27. 4. (st), 1. 6. (st), 8. 9. (čt), 25. 10. (út)')).to.eql([
+        '27.04.2016',
+        '01.06.2016',
+        '08.09.2016',
+        '25.10.2016'
+      ]);
+    });
+
+    after(function() {
+      this.clock.restore();
     });
   });
 

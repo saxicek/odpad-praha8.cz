@@ -5,7 +5,7 @@ var
   scraper     = require('../scraper.js').createScraper(path.basename(__filename, '.js'))
 ;
 
-scraper.url = 'http://www.praha8.cz/Svoz-nebezpecneho-odpadu-1';
+scraper.url = 'http://www.praha8.cz/Sber-nebezpecnych-slozek-komunalniho-odpadu.html';
 
 // district used for validation of container places
 scraper.districtName = 'Praha 8';
@@ -22,8 +22,8 @@ scraper.parse = function(body, callback) {
     $ = cheerio.load(body),
     i = 0;
 
-  $('table.mcp8').each(function() {
-    var str_dates = parserUtil.splitDateList($(this).find('tr.mcp8TableFooterRow').find('td').contents().slice(1,2).text());
+  $('table.seda').each(function() {
+    var str_dates = parserUtil.splitDateList($(this).find('tr').last().find('td').contents().slice(1,2).text());
     // for each row (skip header and footer)
     $(this).find('tr').slice(2, -1).each(function() {
       var
@@ -32,7 +32,7 @@ scraper.parse = function(body, callback) {
         raw_time,
         dates;
       cells = $(this).find('td');
-      place_name = cells.eq(0).text();
+      place_name = parserUtil.normalizePlace(cells.eq(0).text());
 
       raw_time = cells.eq(1).text().trim();
 

@@ -94,6 +94,20 @@ function split_date_list(date_list) {
           array[index] = value.trim();
         }
       });
+    } else {
+      // year not present, use current year
+      // assuming pattern "27. 4. (st), 1. 6. (st), 8. 9. (čt), 25. 10. (út)"
+      year = (new Date()).getFullYear();
+      dates = date_list.split(',');
+      // iterate through dates and modify them where required
+      dates.forEach(function(value, index, array) {
+        var fields = value.trim().split(' ');
+        var day = fields[0].trim();
+        var month = fields[1].trim();
+        if (day.length === 2) day = '0' + day;
+        if (month.length === 2) month = '0' + month;
+        array[index] = day + month + year;
+      });
     }
   }
   return dates;
@@ -114,4 +128,3 @@ module.exports = exports = {
   dateWithoutYear: date_without_year,
   normalizePlace: normalize_place
 };
-
