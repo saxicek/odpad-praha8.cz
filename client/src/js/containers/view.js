@@ -130,10 +130,31 @@ define([
       }
     }),
 
+    UnknownPlace = Backbone.View.extend({
+      tagName: 'li',
+      initialize:function () {
+        _.bindAll(this, 'render', 'setPlace');
+        this.render();
+      },
+      events: {
+        'click': 'setPlace'
+      },
+      render:function () {
+        this.$el.html('<a href="#">' + this.model.get('place_name') + '</a>');
+        return this;
+      },
+      setPlace:function () {
+        // show the localization marker on the map
+        var view = new GeoLocatePlace({model:this.model}).render();
+
+        ga('send', 'event', 'unknown_place', 'locate');
+      }
+    }),
+
     // view shows marker to localize unknown place and submits it to server
     UnknownPlaces = Backbone.View.extend({
       initialize:function () {
-        _.bindAll(this, 'render', 'setPlace', 'enableMenu', 'disableMenu', 'updateFilter');
+        _.bindAll(this, 'render', 'enableMenu', 'disableMenu', 'updateFilter');
 
         this.filteredModel = new collection.Places();
         this.filteredModel.on('reset', this.render);
@@ -154,25 +175,13 @@ define([
           var dropdown = $('<ul class="dropdown-menu"></ul>');
 
           var that = this;
-          this.filteredModel.each(function (i) {
-            var item = $('<li><a href="#">' + i.get('place_name') + '</a></li>');
-            item.click(that.setPlace);
-            dropdown.append(item);
+          this.filteredModel.each(function (model) {
+            dropdown.append(new UnknownPlace({model: model}).el);
           });
           this.$el.empty().append(this.menuItem).append(dropdown);
         } else {
           this.$el.empty();
         }
-      },
-      setPlace:function (evt) {
-        // find related model
-        var model = this.model.findWhere({place_name:$(evt.target).text()});
-        // show the localization marker on the map
-        var view = new GeoLocatePlace({model:model}).render();
-
-        ga('send', 'event', 'unknown_place', 'locate');
-
-        return evt.preventDefault();
       },
       enableMenu:function () {
         if (this.menuItem) {
@@ -481,6 +490,7 @@ define([
 
   return {
     GeoLocatePlace: GeoLocatePlace,
+    UnknownPlace: UnknownPlace,
     UnknownPlaces: UnknownPlaces,
     Containers: Containers,
     ContainerFilter: ContainerFilter,
