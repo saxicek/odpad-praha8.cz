@@ -24,18 +24,10 @@ scraper.parse = function(body, callback) {
   $('table.mcp8').find('tr:not(.mcp8TableHeaderRow)').each(function(i, elem) {
     // skip header
     var cells = $(this).find('td');
-    var place_name = cells.eq(0).text();
+    var place_name = parserUtil.normalizePlace(cells.eq(2).contents().first().text());
 
-    var raw_date,
-      raw_time;
-    // check if there is a column with number of containers
-    if (cells.eq(1).text().trim().match(/^\d+$/)) {
-      raw_date = cells.eq(2).text().trim();
-      raw_time = cells.eq(3).text().trim();
-    } else {
-      raw_date = cells.eq(1).text().trim();
-      raw_time = cells.eq(2).text().trim();
-    }
+    var raw_date = cells.eq(0).text().trim();
+    var raw_time = cells.eq(1).text().trim();
     var dates = parserUtil.parseDate(raw_date, raw_time);
     containers[i] = {
       place_name: place_name,
