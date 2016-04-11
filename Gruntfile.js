@@ -103,7 +103,8 @@ module.exports = function(grunt) {
           'test/**/*.js'
         ],
         tasks: [
-          'mochaTest',
+          'mochaTest:scrapers',
+          'mochaTest:server',
           'jshint:server'
         ]
       },
