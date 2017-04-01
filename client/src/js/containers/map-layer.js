@@ -39,7 +39,6 @@ define([
 
   return {
     control: control,
-    mapQuestOSM: mapQuestOSM,
     googleRoad: googleRoad,
     nokiaNormalDay: nokiaNormalDay,
     nokiaSatelliteLabelsDay: nokiaSatelliteLabelsDay

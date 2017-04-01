@@ -14,7 +14,7 @@ define([
     map = L.map("map", {
       zoom: 13,
       center: config.mapCenter,
-      layers: [mapLayer.mapQuestOSM]
+      layers: [mapLayer.googleRoad]
     })
   ;
 
