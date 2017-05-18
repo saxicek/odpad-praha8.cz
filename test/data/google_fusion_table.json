@@ -1,0 +1,19 @@
+{
+  "kind": "fusiontables#sqlresponse",
+  "columns": [
+    "District Name",
+    "Place Name",
+    "Time From",
+    "Time To",
+    "Container Type"
+  ],
+  "rows": [
+    [
+      "Praha 14",
+      "Sadská x V Humenci",
+      "2017-04-22 8:00",
+      "2017-04-22 8:30",
+      "BIO_WASTE"
+    ]
+  ]
+}

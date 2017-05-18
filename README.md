@@ -115,6 +115,10 @@ When you're ready, you can push changes to your OpenShift-hosted application env
 ## Geo Data
 Application uses geo data from [Geoportal Praha](http://www.geoportalpraha.cz/) for validation that place is located in correct district. Dataset from [this](http://www.geoportalpraha.cz/cs/clanek/159/datove-sady-ke-stazeni#.U_86uvnV-K-) location is used. Please refer to [Geo data load](doc/geo_data_load.md) documentation for step-by-step description how to load district data.
 
+## Parsing from Google Fusion Table
+There is parser that reads container data from preconfigured Google Fusion Table. You can change the table using
+environment variable `GOOGLE_FUSION_TABLE_ID`. Please also change your API key - environment variable `FUSION_TABLES_API_KEY`.   
+
 ## License
 This code is licensed under the MIT License. (See LICENSE.txt)
 
