@@ -1,6 +1,7 @@
 var
     config      = require('config'),
     moment      = require('moment'),
+    path        = require('path'),
     scraper     = require('../scraper.js').createScraper(path.basename(__filename, '.js'))
 ;
 
