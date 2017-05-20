@@ -11,7 +11,7 @@ scraper.url = 'https://www.googleapis.com/fusiontables/v2/query?sql=SELECT%20*%2
 // scraper.districtName = '';
 
 // minimum interval between scrapes; format is moment.duration(String);
-scraper.minScrapeInterval = '1.00:00:00'; // once a day
+scraper.minScrapeInterval = '1:00:00'; // every hour
 
 // container type set to all parsed containers
 // not used - fusion table contains container type
