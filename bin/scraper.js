@@ -103,12 +103,43 @@ var scraperPrototype = {
           callback(err);
         }
       },
+      // populate district IDs if district name is set on data level instead of scraper level
+      function(containers, callback) {
+        if (containers && containers.length > 0) {
+          var districtNameCache = {};
+          async.eachLimit(containers, 5, function(container, callback) {
+            if (container && 'district_name' in container) {
+              if (container.district_name in districtNameCache) {
+                container.district_id = districtNameCache[container.district_name];
+                callback();
+              } else {
+                db.findDistrictId(container.district_name, function(err, res) {
+                  if (err) return callback(err);
+                  if (res) {
+                    districtNameCache[container.district_name] = res.id;
+                    container.district_id = res.id;
+                    callback();
+                  } else {
+                    callback('District with name "'+container.district_name+'" not found!');
+                  }
+                });
+              }
+            } else {
+              callback();
+            }
+          }, function (err) {
+            callback(err, containers)
+          })
+        } else {
+          callback(null, containers);
+        }
+      },
       // populate and normalize data
       function(containers, callback) {
         if (containers && containers.length > 0) {
           // add district id and container type to containers
           containers.forEach(function(container) {
-            container.district_id = self.districtId;
+            container.district_id = container.district_id || self.districtId;
             container.container_type = container.container_type || self.containerType;
             container.place_name = parserUtil.normalizePlace(container.place_name);
           });
