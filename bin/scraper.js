@@ -254,27 +254,34 @@ var scraperPrototype = {
             self.info('Inserting places');
             // transform containers into places dictionary to prevent duplicate entries ...
             var reducedContainers = containers.reduce(function(memo, value){
-              if (!memo.hasOwnProperty(value.container_type)) {
-                memo[value.container_type] = [value.place_name];
+              if (!memo.hasOwnProperty(value.district_id)) {
+                memo[value.district_id] = {};
+              }
+              if (!memo[value.district_id].hasOwnProperty(value.container_type)) {
+                memo[value.district_id][value.container_type] = [value.place_name];
               } else {
-                if (memo[value.container_type].indexOf(value.place_name) === -1) {
+                if (memo[value.district_id][value.container_type].indexOf(value.place_name) === -1) {
                   // add unique only
-                  memo[value.container_type].push(value.place_name);
+                  memo[value.district_id][value.container_type].push(value.place_name);
                 }
               }
               return memo;
             }, {});
-            // ... and then extract unique (place name, container type) and add district_id
+            // ... and then extract unique (place name, container type, district_id)
             var places = [];
 
             function flatten(place_name) {
-              places.push({ place_name: place_name, container_type: container_type, district_id: self.districtId });
+              places.push({ place_name: place_name, container_type: container_type, district_id: district_id });
             }
 
-            for (var container_type in reducedContainers) {
-              if (reducedContainers.hasOwnProperty(container_type)) {
-                reducedContainers[container_type]
-                  .forEach(flatten);
+            for (var district_id in reducedContainers) {
+              if (reducedContainers.hasOwnProperty(district_id)) {
+                for (var container_type in reducedContainers[district_id]) {
+                  if (reducedContainers[district_id].hasOwnProperty(container_type)) {
+                    reducedContainers[district_id][container_type]
+                      .forEach(flatten);
+                  }
+                }
               }
             }
             // add places
