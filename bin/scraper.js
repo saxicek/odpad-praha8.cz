@@ -347,12 +347,12 @@ var scraperPrototype = {
   },
   info: function(message) {
     if (message) {
-      console.log(this.name + ': ' + message);
+      console.log(moment().format() + ' ' + this.name + ': ' + message);
     }
   },
   error: function(message, err) {
     if (message) {
-      console.error(this.name + ': ' + message, err);
+      console.error(moment().format() + ' ' + this.name + ': ' + message, err);
     }
   },
   reduceInsertResults: function(prev, curr) {
