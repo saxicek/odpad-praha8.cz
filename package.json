@@ -1,7 +1,7 @@
 {
   "name": "Odpad-Praha8",
   "description": "A simple mapping application for finding bulk waste containers in Prague 8",
-  "version": "2.5.0",
+  "version": "2.5.1",
   "private": true,
   "engines": {
     "node": "0.10.x",
