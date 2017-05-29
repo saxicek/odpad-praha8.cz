@@ -107,7 +107,7 @@ var scraperPrototype = {
       function(containers, callback) {
         if (containers && containers.length > 0) {
           var districtNameCache = {};
-          async.eachLimit(containers, 5, function(container, callback) {
+          async.eachLimit(containers, 2, function(container, callback) {
             if (container && 'district_name' in container) {
               if (container.district_name in districtNameCache) {
                 container.district_id = districtNameCache[container.district_name];
